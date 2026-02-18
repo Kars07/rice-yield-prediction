@@ -17,9 +17,9 @@ st.set_page_config(page_title="RiceMonitor NG", layout="wide", initial_sidebar_s
 class RiceGRU(nn.Module):
     def __init__(self):
         super().__init__()
-        self.gru = nn.GRU(3, 16, batch_first=True)
-        self.dropout = nn.Dropout(0.2)
-        self.fc = nn.Linear(16, 1)
+        self.gru = nn.GRU(3, 32, batch_first=True) # Increased to 32
+        self.dropout = nn.Dropout(0.3)             # Updated to 0.3
+        self.fc = nn.Linear(32, 1)                 # Increased to 32
     def forward(self, x):
         out, _ = self.gru(x)
         return self.fc(self.dropout(out[:, -1, :]))
@@ -48,10 +48,10 @@ except Exception as e:
     st.stop()
 
 # --- SIDEBAR: ROLE SELECTION & CONTROLS ---
-st.sidebar.title("🌾 RiceMonitor NG")
+st.sidebar.title("RiceMonitor NG")
 st.sidebar.markdown("Empowering Nigeria's Rice Future")
 
-user_role = st.sidebar.radio("Select User Profile:", ["👨‍🌾 Farmer / Extension", "🏛️ Government / Policy"])
+user_role = st.sidebar.radio("Select User Profile:", ["Farmer / Extension", "Government / Policy"])
 selected_state = st.sidebar.selectbox("Select State", ["Kebbi", "Niger", "Kano", "Jigawa", "Ebonyi", "Taraba"])
 show_raw_data = st.sidebar.checkbox("Show Raw Satellite Data", value=False)
 
@@ -96,14 +96,14 @@ def get_prediction(df):
 
 predicted_yield, pred_xgb, pred_dl = get_prediction(df)
 
-# Realistic Confidence Interval [Methodology Source 264]
+# Realistic Confidence Interval
 # Literature benchmarks suggest ±0.6 to ±0.8 t/ha for real-world models
 ci_margin = 0.65
 lower_bound = max(0, predicted_yield - ci_margin)
 upper_bound = predicted_yield + ci_margin
 
-# --- UI: FARMER VIEW [Methodology Source 313] ---
-if user_role == "👨‍🌾 Farmer / Extension":
+# --- UI: FARMER VIEW  ---
+if user_role == "Farmer / Extension":
     st.header(f"Farm Health Dashboard: {selected_state}")
 
     # Actionable Alerts [Methodology Source 331]
@@ -137,8 +137,8 @@ if user_role == "👨‍🌾 Farmer / Extension":
     fig.update_layout(title="Vegetation Index Tracked Against Growth Stages", xaxis_title="Date", yaxis_title="NDVI")
     st.plotly_chart(fig, use_container_width=True)
 
-# --- UI: GOVERNMENT / POLICY VIEW [Methodology Source 335] ---
-elif user_role == "🏛️ Government / Policy":
+# --- UI: GOVERNMENT / POLICY VIEW  ---
+elif user_role == "Government / Policy":
     st.header(f"Regional Yield Monitoring: {selected_state}")
 
     st.warning("⚠️ **Risk Alert:** 2 LGAs in Northern Kebbi show slight negative deviation from historical NDVI averages. Monitor for localized dry spells.") # [Methodology Source 343]
