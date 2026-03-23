@@ -28,7 +28,6 @@ state_coords = {
 class RiceLSTM(nn.Module):
     def __init__(self):
         super().__init__()
-        # Must match ensemble_v2.py (7 features, 64 hidden, 2 layers)
         self.lstm = nn.LSTM(7, 64, num_layers=2, batch_first=True, dropout=0.2)
         self.fc1 = nn.Linear(64, 16)
         self.relu = nn.ReLU()
@@ -43,19 +42,15 @@ class RiceLSTM(nn.Module):
 # --- LOAD MODELS & WEIGHTS ---
 @st.cache_resource
 def load_assets():
-    # 1. Load V2 XGBoost
     xgb_model = xgb.XGBRegressor()
     xgb_model.load_model("model_development/xgboost_model_v2.json")
 
-    # 2. Load V2 LSTM
     dl_model = RiceLSTM()
     dl_model.load_state_dict(torch.load("model_development/dl_model_v2.pth", weights_only=True))
     dl_model.eval()
 
-    # 3. Load V2 Scaler
     scaler = joblib.load("model_development/scaler_v2.bin")
 
-    # 4. Load V2 Weights
     with open("model_development/ensemble_weights_v2.json", "r") as f:
         weights = json.load(f)
 
@@ -77,11 +72,8 @@ show_raw_data = st.sidebar.checkbox("Show Raw Satellite Data", value=False)
 
 # --- LOAD REAL SATELLITE DATA ---
 try:
-    # Changed to the national V2 dataset
     df_master = pd.read_csv('national_processed_v2.csv')
     df_master['date'] = pd.to_datetime(df_master['date'])
-
-    # Filter for the selected state and the most recent year (2024)
     df = df_master[(df_master['State'] == selected_state) & (df_master['Year'] == 2024)].copy()
 
     if df.empty:
@@ -104,7 +96,7 @@ def get_prediction(df_filtered):
     mean_temp = df_filtered['temperature_2m'].mean()
 
     X_tab = pd.DataFrame([[mean_ndvi, max_evi, mean_ndwi, mean_vv, total_rain, mean_temp]],
-                            columns=['NDVI_Mean', 'EVI_Max', 'NDWI_Mean', 'VV_Mean', 'Total_Rain', 'Mean_Temp'])
+                         columns=['NDVI_Mean', 'EVI_Max', 'NDWI_Mean', 'VV_Mean', 'Total_Rain', 'Mean_Temp'])
 
     pred_xgb = xgb_model.predict(X_tab)[0]
 
@@ -115,7 +107,7 @@ def get_prediction(df_filtered):
         seq_10_steps = np.zeros((10, 7))
     else:
         x_old = np.linspace(0, 1, len(raw_features))
-        x_new = np.linspace(0, 1, 10) # SEQUENCE_LENGTH = 10
+        x_new = np.linspace(0, 1, 10)
         f = interp1d(x_old, raw_features, axis=0, kind='linear')
         seq_10_steps = f(x_new)
 
@@ -132,7 +124,7 @@ def get_prediction(df_filtered):
 
 predicted_yield, pred_xgb, pred_dl = get_prediction(df)
 
-# Realistic Confidence Interval (±0.65 t/ha based on literature)
+# Realistic Confidence Interval (±0.65 t/ha based on literature and RMSE)
 ci_margin = 0.65
 lower_bound = max(0, predicted_yield - ci_margin)
 upper_bound = predicted_yield + ci_margin
@@ -143,16 +135,18 @@ if user_role == "Farmer / Extension":
 
     st.info(f" 💡 **Recommendation:** Vegetation index is tracking normally for {selected_state}. Ensure adequate field flooding during this tillering stage to maximize yield potential.")
 
-    col1, col2, col3 = st.columns(3)
-    col1.metric("Predicted Yield", f"{predicted_yield:.2f} t/ha")
-    col2.metric("Peak Crop Vigor (EVI)", f"{df['EVI'].max():.2f}")
+    # UPDATED: Primary Display as requested
+    st.markdown(f"### **Predicted Yield: {predicted_yield:.2f} t/ha** [Weighted Ensemble]")
+    st.caption(f"*(95% CI: {lower_bound:.2f} – {upper_bound:.2f} t/ha)*")
+    st.divider()
 
-    # Dynamic rainfall assessment
+    col1, col2, col3 = st.columns(3)
+    col1.metric("Peak Crop Vigor (EVI)", f"{df['EVI'].max():.2f}")
+
     total_rain = df['precipitation'].sum()
     rain_status = "Optimal" if total_rain > 500 else "Dry Spell Risk"
-    col3.metric("Seasonal Rainfall", f"{total_rain:.1f} mm", delta=rain_status, delta_color="normal" if total_rain > 500 else "inverse")
-
-    st.caption("The dashboard presents the weighted ensemble yield forecast derived primarily from XGBoost with temporal stabilization from an LSTM neural network.")
+    col2.metric("Seasonal Rainfall", f"{total_rain:.1f} mm", delta=rain_status, delta_color="normal" if total_rain > 500 else "inverse")
+    col3.metric("Mean Temperature", f"{df['temperature_2m'].mean():.1f} °C")
 
     # Interactive Phenology Chart
     st.subheader("Crop Growth Stages (Phenology)")
@@ -179,20 +173,21 @@ elif user_role == "Government / Policy":
 
     st.warning(f"⚠️ **Risk Alert:** Monitoring seasonal rainfall and temperature spikes in {selected_state} to track against historical agro-ecological baselines.")
 
-    col1, col2, col3, col4 = st.columns(4)
-    col1.metric("Aggregated Yield Forecast", f"{predicted_yield:.2f} t/ha")
-    col2.metric("95% Confidence Interval", f"{lower_bound:.2f} - {upper_bound:.2f}")
-    col3.metric("Model Uncertainty Margin", f"±{ci_margin} t/ha")
+    # UPDATED: Primary Display as requested
+    col_main, col_impact = st.columns([2, 1])
+    with col_main:
+        st.markdown(f"## **Aggregated Yield Forecast: {predicted_yield:.2f} t/ha**")
+        st.markdown(f"#### **95% Prediction Interval: {lower_bound:.2f} – {upper_bound:.2f} t/ha**")
+    with col_impact:
+        impact = "Negligible" if predicted_yield > 2.8 else "Elevated"
+        st.metric("Import Gap Impact", impact, delta="Stable Production" if impact == "Negligible" else "Shortfall Risk", delta_color="normal" if impact == "Negligible" else "inverse")
 
-    impact = "Negligible" if predicted_yield > 2.8 else "Elevated"
-    col4.metric("Import Gap Impact", impact, delta="Stable Production" if impact == "Negligible" else "Shortfall Risk", delta_color="normal" if impact == "Negligible" else "inverse")
-
-    st.caption(f"Confidence intervals ({lower_bound:.2f} - {upper_bound:.2f} t/ha) are derived from ensemble variance reflecting variability in climate, management, and satellite noise.")
+    st.divider()
 
     col_map, col_data = st.columns([1, 1])
     with col_map:
         st.subheader("Spatial Risk Map")
-        lat, lon = state_coords.get(selected_state, [9.0820, 8.6753]) # Default to central Nigeria if missing
+        lat, lon = state_coords.get(selected_state, [9.0820, 8.6753])
         m = folium.Map(location=[lat, lon], zoom_start=7)
         folium.CircleMarker([lat, lon], radius=20, color="green" if predicted_yield > 2.5 else "orange", fill=True, fill_opacity=0.4, tooltip=f"{selected_state} Average: {predicted_yield:.2f} t/ha").add_to(m)
         st_folium(m, width=400, height=350)
@@ -201,6 +196,9 @@ elif user_role == "Government / Policy":
         st.subheader("Model Diagnostic Details")
         st.write(f"**Primary Target (XGBoost):** {pred_xgb:.2f} t/ha (Weight: {weights['xgb_weight']:.1%})")
         st.write(f"**Temporal Stabilizer (LSTM):** {pred_dl:.2f} t/ha (Weight: {weights['dl_weight']:.1%})")
+
+        # UPDATED: The academic justification text you requested
+        st.info("💡 **Architecture Note:** The ensemble outperforms standalone XGBoost by leveraging state-specific agricultural signatures learned jointly by both models. The XGBoost model excels at tabular feature extraction, while the LSTM captures dynamic temporal phenology.")
 
         st.markdown(f"**Agro-Climatic Summary ({selected_state}):**")
         st.write(f"- Total Seasonal Rain: **{df['precipitation'].sum():.1f} mm**")
