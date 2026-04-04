@@ -10,7 +10,7 @@ df['date'] = pd.to_datetime(df['date'])
 
 print(f"Original Shape: {df.shape}")
 
-# Define what we HOPE to find
+# Define what to find
 expected_smooth_features = ['NDVI', 'EVI', 'NDWI', 'VV', 'VH', 'Lai']
 expected_climate_features = ['precipitation', 'temperature_2m']
 
