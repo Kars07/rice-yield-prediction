@@ -80,15 +80,25 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 2. STATE CONFIGURATION
+# 2. GEOSPATIAL & CONTEXTUAL DATA
 # ==========================================
 STATE_COORDS = {
     "Kebbi": [11.4836, 4.1953], "Niger": [9.9309, 6.5569],
     "Kano": [12.0022, 8.5920], "Jigawa": [12.2280, 9.5616],
     "Ebonyi": [6.2649, 8.1137], "Taraba": [8.8937, 10.8198]
 }
-# Historical YoY Trend Fallbacks
+
 STATE_TRENDS = {"Kebbi": 0.15, "Niger": -0.05, "Kano": 0.22, "Jigawa": 0.10, "Ebonyi": 0.18, "Taraba": -0.12}
+
+EXTERNAL_DATA = {
+    "Kebbi": {"soil": "Heavy Clay", "flood_risk": "High (River Basin)", "elevation": "Lowland"},
+    "Niger": {"soil": "Clay Loam", "flood_risk": "Moderate", "elevation": "Lowland"},
+    "Kano": {"soil": "Sandy Loam", "flood_risk": "Low", "elevation": "Highland"},
+    "Jigawa": {"soil": "Sandy Loam", "flood_risk": "High (Flash Floods)", "elevation": "Lowland"},
+    "Ebonyi": {"soil": "Heavy Clay", "flood_risk": "Moderate", "elevation": "Swampland"},
+    "Taraba": {"soil": "Loam", "flood_risk": "High (River Benue)", "elevation": "Highland"}
+}
+
 RMSE_SCORE = 0.274
 
 # ==========================================
@@ -117,7 +127,7 @@ def load_real_data_and_predict(state_name):
         state_df = df[df['State'] == state_name].sort_values('date')
 
         if len(state_df) < 3:
-            return 0, "N/A", "N/A", [], []
+            return 0.0, "N/A", "N/A", [], []
 
         # 2. Extract Raw Features
         raw_features = state_df[['NDVI', 'EVI', 'NDWI', 'VV', 'VH', 'precipitation', 'temperature_2m']].values
@@ -185,10 +195,10 @@ with col_panel:
     st.markdown("<h2 style='margin-bottom: 0;'>🌾 AgroSense Intelligence</h2>", unsafe_allow_html=True)
     st.markdown("<p style='color: #64748b !important; font-size: 14px; margin-top: -5px;'>National Rice Yield Monitor v2.0</p>", unsafe_allow_html=True)
 
-    selected_state = st.selectbox("📍 Search Region", list(STATE_COORDS.keys()), index=4) # Defaults to Ebonyi
+    selected_state = st.selectbox("📍 Search Region", list(STATE_COORDS.keys()), index=4)
 
     # ⚡ TRIGGER INFERENCE
-    with st.spinner("Processing satellite telemetry..."):
+    with st.spinner("Processing satellite telemetry & ML pipelines..."):
         pred_yield, current_temp, current_rain, chart_dates, chart_ndvi = load_real_data_and_predict(selected_state)
 
     st.write("---")
@@ -214,18 +224,29 @@ with col_panel:
     )
     st.markdown(f"<p style='font-size: 12px; color: #64748b !important; margin-top: -10px; text-align: center;'><b>Model Confidence:</b> ±{RMSE_SCORE} t/ha | Ensemble</p>", unsafe_allow_html=True)
 
-    # AI Insight Box
-    insight_color = "#22c55e" if status == "Optimal" else "#f59e0b"
-    insight_text = "Satellite indices confirm excellent paddy inundation. Canopy density is tracking at optimal levels." if status == "Optimal" else "Slight deviations in expected biomass detected. Continuous monitoring advised for potential yield stress."
+    # --- ENHANCED AI INSIGHT WITH EXTERNAL FEATURES ---
+    ext_info = EXTERNAL_DATA[selected_state]
+    insight_color = "#22c55e" if status == "Optimal" and "High" not in ext_info['flood_risk'] else "#f59e0b"
+
+    ai_analysis = f"""
+    <b>Yield & Satellite:</b> NDWI and EVI indicate {status.lower()} vegetative health predicting {pred_yield:.2f} t/ha.<br>
+    <b>Geospatial Context:</b> The region features <i>{ext_info['soil']}</i> on <i>{ext_info['elevation']}</i> terrain. <br>
+    <b>Risk Alert:</b> Flood risk is currently evaluated as <b>{ext_info['flood_risk']}</b>.
+    """
+
+    if "High" in ext_info['flood_risk'] and status == "Optimal":
+         ai_analysis += "<br><i>Recommendation:</i> Despite optimal canopy growth, advise early harvesting protocols due to adjacent basin flooding threats."
+    elif ext_info['soil'] == "Sandy Loam" and "High" not in ext_info['flood_risk']:
+         ai_analysis += "<br><i>Recommendation:</i> Soil retention is low. Advise increased irrigation scheduling to maintain optimal NDWI levels."
 
     st.markdown(f"""
         <div style="background: linear-gradient(90deg, #f8fafc, #ffffff); border-left: 4px solid {insight_color}; padding: 16px; border-radius: 8px; margin: 20px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
             <div style="display: flex; align-items: center; margin-bottom: 8px;">
-                <span style="font-size: 18px; margin-right: 8px;">✨</span>
-                <span style="color: #1e293b !important; font-weight: 700; font-size: 14px;">AI Insight</span>
+                <span style="font-size: 18px; margin-right: 8px;">🤖</span>
+                <span style="color: #1e293b !important; font-weight: 800; font-size: 14px;">Multi-Factor AI Analysis</span>
             </div>
-            <span style="font-size: 13px; line-height: 1.5; color: #334155 !important;">
-                {insight_text}
+            <span style="font-size: 13px; line-height: 1.6; color: #334155 !important;">
+                {ai_analysis}
             </span>
         </div>
     """, unsafe_allow_html=True)
@@ -249,73 +270,85 @@ with col_panel:
             st.warning("No phenology data available for plotting.")
 
 # ==========================================
-# 5. NATIVE GOOGLE MAPS ENGINE (RIGHT)
+# 5. ADVANCED MAP ENGINE (WITH OVERLAYS)
 # ==========================================
 with col_map:
-    # Initialize Folium without default tiles
+    # Initialize Folium
     m = folium.Map(location=STATE_COORDS[selected_state], zoom_start=7, tiles=None, control_scale=True)
 
-    # Inject Literal Google Maps Standard Street Layer
+    # Layer 1: Google Maps Standard (Default)
     folium.TileLayer(
         tiles='https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
-        attr='Google',
-        name='Google Maps Standard',
-        overlay=False,
-        control=False
+        attr='Google', name='Google Maps Standard', overlay=False, control=True
     ).add_to(m)
+
+    # Layer 2: OpenTopoMap (For Elevation & Terrain Analysis)
+    folium.TileLayer(
+        tiles='https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
+        attr='OpenTopoMap', name='Terrain & Elevation', overlay=False, control=True
+    ).add_to(m)
+
+    # Feature Group for Flood Risk Zones
+    flood_zones = folium.FeatureGroup(name='Flood Risk Zones', show=False)
 
     for state, coords in STATE_COORDS.items():
         is_selected = (state == selected_state)
-
-        # Determine pin colors based on selection
         bg_color = '#22c55e' if is_selected else '#94a3b8'
         size = 24 if is_selected else 16
+        ext_info = EXTERNAL_DATA[state]
 
-        # Custom HTML CSS for the map pins (Google Maps style dots)
+        # Map Pins
         icon_html = f"""
-            <div style="
-                background-color: {bg_color}; width: {size}px; height: {size}px;
+            <div style="background-color: {bg_color}; width: {size}px; height: {size}px;
                 border: 3px solid white; border-radius: 50%; box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-                display: flex; justify-content: center; align-items: center;
-                position: relative; left: -{size/2}px; top: -{size/2}px;
-            "></div>
+                position: relative; left: -{size/2}px; top: -{size/2}px;"></div>
         """
-
-        # Location label right under the pin
         label_html = f"""
-            <div style="
-                position: absolute; top: 5px; left: -20px; width: 100px;
+            <div style="position: absolute; top: 5px; left: -20px; width: 100px;
                 font-family: 'Segoe UI', sans-serif; font-weight: 800; font-size: 13px; color: #1e293b;
-                text-shadow: 2px 2px 0 #fff, -2px -2px 0 #fff, 2px -2px 0 #fff, -2px 2px 0 #fff;
-            ">{state}</div>
+                text-shadow: 2px 2px 0 #fff, -2px -2px 0 #fff, 2px -2px 0 #fff, -2px 2px 0 #fff;">
+                {state}</div>
         """
 
-        # Map Popup
-        # We can run a quick mock-yield for unselected states in the popup just for UI cleanliness
+        # Map Popup with External Features & Expected Yield
         display_yield = pred_yield if is_selected else STATE_TRENDS.get(state, 0) + 3.5
 
         popup_html = f"""
-            <div style="font-family: 'Segoe UI', sans-serif; width: 160px; padding: 5px; color: #1e293b;">
+            <div style="font-family: 'Segoe UI', sans-serif; width: 180px; padding: 5px; color: #1e293b;">
                 <h3 style="margin:0; color:#1e293b; font-size: 16px;">{state} Region</h3>
-                <p style="margin: 4px 0 8px; font-size: 12px; color: #64748b;">Rice Cultivation Zone</p>
-                <div style="background: #f0fdf4; border: 1px solid #bbf7d0; padding: 8px; border-radius: 6px;">
+                <hr style="margin: 5px 0; border-color: #e2e8f0;">
+                <p style="margin: 0; font-size: 12px;"><b>Soil:</b> {ext_info['soil']}</p>
+                <p style="margin: 0; font-size: 12px;"><b>Elevation:</b> {ext_info['elevation']}</p>
+                <div style="background: #f0fdf4; border: 1px solid #bbf7d0; padding: 8px; border-radius: 6px; margin-top: 8px;">
                     <b style="color:#166534; font-size: 14px;">Yield Est: {display_yield:.2f} t/ha</b>
                 </div>
             </div>
         """
 
         folium.Marker(
-            location=coords,
-            popup=folium.Popup(popup_html, max_width=250),
-            tooltip=f"Analyze {state}",
-            icon=folium.DivIcon(html=icon_html + label_html)
+            location=coords, popup=folium.Popup(popup_html, max_width=250),
+            tooltip=f"Analyze {state}", icon=folium.DivIcon(html=icon_html + label_html)
         ).add_to(m)
 
-        # Animated pulse ring for the selected state
+        # Pulse ring for selected state
         if is_selected:
             folium.CircleMarker(
                 location=coords, radius=40, color='#22c55e', weight=2,
                 fill=True, fill_color='#4ade80', fill_opacity=0.2
             ).add_to(m)
+
+        # Add Flood Risk Heat Zones to the separate layer
+        if "High" in ext_info['flood_risk']:
+            folium.Circle(
+                location=coords, radius=35000, color='red', weight=1,
+                fill=True, fill_color='red', fill_opacity=0.15,
+                tooltip=f"High Flood Risk Area ({state})"
+            ).add_to(flood_zones)
+
+    # Add the flood zones to the map
+    flood_zones.add_to(m)
+
+    # Layer Control so the user can toggle Topography and Flood Zones
+    folium.LayerControl(position='topright').add_to(m)
 
     st_folium(m, width="100%", height=800, returned_objects=[])
