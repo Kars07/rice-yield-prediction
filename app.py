@@ -12,9 +12,7 @@ import json
 from scipy.interpolate import interp1d
 import os
 
-# ==========================================
-# 1. PAGE CONFIG & PREMIUM CSS INJECTION
-# ==========================================
+
 st.set_page_config(page_title="AgroSense Intelligence | Pro", layout="wide", initial_sidebar_state="collapsed")
 
 st.markdown("""
@@ -80,7 +78,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 2. GEOSPATIAL & CONTEXTUAL DATA
+# GEOSPATIAL & CONTEXTUAL DATA
 # ==========================================
 STATE_COORDS = {
     "Kebbi": [11.4836, 4.1953], "Niger": [9.9309, 6.5569],
@@ -102,7 +100,7 @@ EXTERNAL_DATA = {
 RMSE_SCORE = 0.274
 
 # ==========================================
-# 3. REAL INFERENCE ENGINE (LSTM + XGBOOST)
+# INFERENCE ENGINE (LSTM + XGBOOST)
 # ==========================================
 class RiceLSTM(nn.Module):
     def __init__(self):
@@ -224,7 +222,6 @@ with col_panel:
     )
     st.markdown(f"<p style='font-size: 12px; color: #64748b !important; margin-top: -10px; text-align: center;'><b>Model Confidence:</b> ±{RMSE_SCORE} t/ha | Ensemble</p>", unsafe_allow_html=True)
 
-    # --- ENHANCED AI INSIGHT WITH EXTERNAL FEATURES ---
     ext_info = EXTERNAL_DATA[selected_state]
     insight_color = "#22c55e" if status == "Optimal" and "High" not in ext_info['flood_risk'] else "#f59e0b"
 
@@ -252,7 +249,7 @@ with col_panel:
     """, unsafe_allow_html=True)
 
     # Real-time Phenology Chart
-    with st.expander("📊 View Phenology Data (Real-time)"):
+    with st.expander("View Phenology Data (Real-time)"):
         if chart_dates:
             fig = go.Figure()
             fig.add_trace(go.Scatter(
@@ -270,7 +267,7 @@ with col_panel:
             st.warning("No phenology data available for plotting.")
 
 # ==========================================
-# 5. ADVANCED MAP ENGINE (WITH OVERLAYS)
+# MAP ENGINE (WITH OVERLAYS)
 # ==========================================
 with col_map:
     # Initialize Folium
