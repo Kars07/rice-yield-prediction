@@ -1,0 +1,75 @@
+State,Farm_Name,Type,Location,LGA,Latitude,Longitude,Source
+Ebonyi,Kute Farm,Commercial Farm,Abakaliki,Abakaliki,6.3249,8.1137,Nigeria Rice Milling Association / State records
+Ebonyi,Rice Mill Company Nigeria Limited,Rice Mill,Abakaliki,Abakaliki,6.3249,8.1137,Nigeria Rice Milling Association
+Ebonyi,Alenco Nigeria Limited,Commercial Farm/Mill,Abakaliki,Abakaliki,6.3249,8.1137,Nigeria Rice Milling Association
+Ebonyi,Nkama Mills,Rice Mill,Abakaliki,Abakaliki,6.3249,8.1137,Nigeria Rice Milling Association
+Ebonyi,OFU OBI NDIABOISHIAGU (IZZI) RICE FARMERS CO-OPERATIVE,Cooperative Society,Izzi,Izzi,6.45,8.15,CAC Nigeria / State-registered exporter
+Ebonyi,Ezillo Rice Field,Production Site,Ezillo,Ishielu,6.4333,7.8,Academic soil-to-plant transfer studies
+Jigawa,Lawal Farms,Commercial Farm,"Ungwar Gidai Dubu, Dutse",Dutse,11.7591,9.3392,"Business listing / Produces rice, tomatoes, beans, millet"
+Jigawa,Jigawa Rice Mill Limited,Rice Mill,Gagarawa,Gagarawa,12.8667,9.5333,State agro-processing records
+Jigawa,Three Brothers Rice Mill,Rice Mill,Hadejia,Hadejia,12.45,10.04,State agro-processing records
+Jigawa,Danmodi Rice Mill,Rice Mill,Kafin Hausa,Kafin Hausa,12.2333,9.9167,State agro-processing records
+Jigawa,Dangote Rice Mill,Rice Mill,Kaugama,Kaugama,12.2833,9.75,State agro-processing records
+Jigawa,Majestic Farms Limited,Rice Mill/Agro-processing,Dutse,Dutse,11.7591,9.3392,State agro-processing records
+Jigawa,Jifatu Food Processing Limited,Food Processor,Dutse,Dutse,11.7591,9.3392,State agro-processing records
+Jigawa,Amana Rice Limited,Rice Processor,Dutse,Dutse,11.7591,9.3392,State agro-processing records
+Jigawa,Biak Continental Limited,Rice Mill,Kiyawa,Kiyawa,11.7833,9.6167,State agro-processing records
+Jigawa,WACOT Limited,Sesame Processing/Farmers Academy,Gumel,Gumel,12.6333,9.4,State agro-processing records / BUA outgrower scheme area
+Kano,Banan Integrated Farms Limited,Commercial Farm,Kano Metropolis,Nasarawa/Dala,12.0022,8.592,Nigeria Rice Milling Association
+Kano,Molefon Rice Mills Limited,Rice Mill,Kano Metropolis,Nasarawa/Dala,12.0022,8.592,Nigeria Rice Milling Association
+Kano,MAFA Rice Mill Ltd,Automated Rice Mill,Kano Metropolis,Nasarawa/Dala,12.0022,8.592,Produces premium long-grain parboiled rice
+Kano,UMZA International Farms Ltd,Commercial Farm/Mill,"Km 13, Zaria Road",Ungogo,12.05,8.55,Business directory / Commercial-scale rice
+Kano,Fortune Rice Mill Limited,Rice Mill,Kano Metropolis,Nasarawa/Dala,12.0022,8.592,Nigeria Rice Milling Association
+Kano,Garko Cluster - Mazadu Farms Cooperative Society,Cooperative,Garko,Garko,11.65,9.0167,Kano State farmer cluster records
+Kano,Garko Cluster - Gidan Malam Farmers/Fishermen Tsigi,Cooperative,Garko,Garko,11.65,9.0167,Kano State farmer cluster records
+Kano,Garko Cluster - Kademawa Farmer Association,Cooperative,Garko,Garko,11.65,9.0167,Kano State farmer cluster records
+Kano,Garko Cluster - Dausayi Farmers Association,Cooperative,Garko,Garko,11.65,9.0167,Kano State farmer cluster records
+Kano,Garko Cluster - Garko Young Farmer Club,Cooperative,Garko,Garko,11.65,9.0167,Kano State farmer cluster records
+Kano,Garko Cluster - Garko Kadawa Farmers Coop. Society Ltd,Cooperative,Garko,Garko,11.65,9.0167,Kano State farmer cluster records
+Kano,Garko Cluster - Rice Farmers Association of Nigeria (Garko),Cooperative,Garko,Garko,11.65,9.0167,Kano State farmer cluster records
+Kano,Garko Cluster - Maimanda Fadama Farmers,Cooperative,Garko,Garko,11.65,9.0167,Kano State farmer cluster records
+Kano,Garko Cluster - Kera Rice Farmers Association,Cooperative,Garko,Garko,11.65,9.0167,Kano State farmer cluster records
+Kano,Garko Cluster - Garko Rice Farmers Association,Cooperative,Garko,Garko,11.65,9.0167,Kano State farmer cluster records
+Kano,Garko Cluster - Raba Rice Farmers Association,Cooperative,Garko,Garko,11.65,9.0167,Kano State farmer cluster records
+Kano,Garko Cluster - Kafin-chi-I Rice Farmers Association,Cooperative,Garko,Garko,11.65,9.0167,Kano State farmer cluster records
+Kano,Garko Cluster - Sauni Rice Farmer Association,Cooperative,Garko,Garko,11.65,9.0167,Kano State farmer cluster records
+Kano,Garko Cluster - Kafimari Rice Farmers Association,Cooperative,Garko,Garko,11.65,9.0167,Kano State farmer cluster records
+Kano,Kura Cluster - Agolas I Irrigation Water Users Cooperative,Cooperative,Kura,Kura,11.7833,8.4333,Kano State farmer cluster records
+Kano,Kura Cluster - Kura Fadama Farmers and Agro-Chemical Sprayers Coop,Cooperative,Kura,Kura,11.7833,8.4333,Kano State farmer cluster records
+Kano,Kura Cluster - Tafasa Alheri Farmers Multipurpose Cooperative,Cooperative,Kura,Kura,11.7833,8.4333,Kano State farmer cluster records
+Kano,Kura Cluster - Tafasa Young Farmers Cooperative Society Ltd,Cooperative,Kura,Kura,11.7833,8.4333,Kano State farmer cluster records
+Kano,Kura Cluster - Agolas IV and V Water User Cooperative Society,Cooperative,Kura,Kura,11.7833,8.4333,Kano State farmer cluster records
+Kano,Kura Cluster - Federated Water User Association Cooperative,Cooperative,Kura,Kura,11.7833,8.4333,Kano State farmer cluster records
+Kano,Kura Cluster - Bagau Water User Association,Cooperative,Kura,Kura,11.7833,8.4333,Kano State farmer cluster records
+Kano,Kura Cluster - Imawa Water Users Cooperative Society Ltd,Cooperative,Kura,Kura,11.7833,8.4333,Kano State farmer cluster records
+Kano,Kura Cluster - Kasaita Women Rice Farmers Association,Cooperative,Kura,Kura,11.7833,8.4333,Kano State farmer cluster records
+Kebbi,Kitari Farms Limited,Commercial Farm,"No 29 Zagga Road, Bunza",Bunza,12.0833,4.0167,Business directory / Fish and rice production
+Kebbi,Labana Rice Mills Ltd,Rice Mill,"Harasawa Area, Birnin Kebbi",Birnin Kebbi,12.45,4.2,Business directory
+Kebbi,Daula Farm,Commercial Farm,"Km 11 Kalgo Road, Birnin Kebbi",Kalgo/Birnin Kebbi,12.42,4.18,Business directory
+Kebbi,Sahabi Fruits (Rice sourcing from Kalgo),Agro-business,Zuru (sources from Kalgo area),Zuru,11.4333,5.2333,Business directory
+Niger,Katcha LGA Rice Farms (State's biggest production area),Smallholder Cluster,Katcha,Katcha,9.0333,6.3,Niger State biggest rice-producing area / 2-3 cycles annually
+Niger,Onyx Rice Mill,Rice Mill,Niger State,Unknown,9.6167,6.55,State agro-processing records
+Niger,Baddegi Rice Mill,Rice Mill,Baddegi,Bida/Katcha area,9.0833,6.3167,State agro-processing records
+Niger,"AFEX Niger Operations (45,000 registered farmers)",Aggregator/Outgrower,16 LGAs across Niger State,Multiple,9.6139,6.5569,"AFEX Nigeria / 45,000 verified farmers including paddy rice"
+Niger,Paikoro Rice Farms,Smallholder Cluster,Paikoro,Paikoro,9.9833,6.8333,Known rice-producing LGA
+Niger,Suleja Rice Farms,Smallholder Cluster,Suleja,Suleja,9.1833,7.1833,Known rice-producing LGA
+Niger,Kontagora Rice Farms,Smallholder Cluster,Kontagora,Kontagora,10.4667,5.4667,Known rice-producing LGA
+Niger,Lavun Rice Farms,Smallholder Cluster,Lavun,Lavun,9.3333,5.3333,Known rice-producing LGA
+Niger,Mokwa Rice Farms,Smallholder Cluster,Mokwa,Mokwa,9.3,5.0667,Known rice-producing LGA
+Niger,Wushishi Rice Farms,Smallholder Cluster,Wushishi,Wushishi,9.7333,6.0667,Known rice-producing LGA
+Niger,Edati Rice Farms,Smallholder Cluster,Edati,Edati,9.0667,5.4667,Known rice-producing LGA
+Niger,Bida Rice Farms,Smallholder Cluster,Bida,Bida,9.0833,6.0167,Known rice-producing LGA
+Niger,Agaie Rice Farms,Smallholder Cluster,Agaie,Agaie,9.0167,6.3167,Known rice-producing LGA
+Niger,Lapai Rice Farms,Smallholder Cluster,Lapai,Lapai,9.0667,6.5667,Known rice-producing LGA
+Taraba,Ahmed Adamu Majidadi Rice Mills,Rice Mill,Jalingo,Jalingo,8.9,11.3667,State agro-processing records
+Taraba,BIG-TIME RICE MILL AND PROCESSING,Rice Mill,Jalingo,Jalingo,8.9,11.3667,State agro-processing records
+Taraba,Organic Rice and Agro Commodities,Agro-business,Jalingo,Jalingo,8.9,11.3667,State agro-processing records
+Taraba,Africana Golden Rice,Rice Processor,Jalingo,Jalingo,8.9,11.3667,State agro-processing records
+Taraba,Dame Space Resources and Investment Ltd,Agro-business,Jalingo,Jalingo,8.9,11.3667,State agro-processing records
+Taraba,MUPHIDO RICE MILLING COMPANY NIG LTD,Rice Mill,Jalingo,Jalingo,8.9,11.3667,State agro-processing records
+Taraba,Mayo Ranewo Rice Cluster (152 farmers),Farmer Cluster,Mayo Ranewo,Ardo-kola,8.85,11.4,Taraba State farmer cluster records
+Taraba,Koffai Rice Cluster (235 farmers),Farmer Cluster,Koffai,Ardo-kola,8.85,11.4,Taraba State farmer cluster records
+Taraba,Sunkani Rice Cluster (397 farmers),Farmer Cluster,Sunkani,Ardo-kola,8.85,11.4,Taraba State farmer cluster records
+Taraba,Kona Rice Cluster (134 farmers),Farmer Cluster,Kona,Jalingo,8.9,11.3667,Taraba State farmer cluster records
+Taraba,Wuro Sambe Cluster (176 farmers),Farmer Cluster,Wuro Sambe,Jalingo,8.9,11.3667,Taraba State farmer cluster records
+Taraba,Lankaviri Cluster (175 farmers),Farmer Cluster,Lankaviri,Yorro,8.8833,11.6833,Taraba State farmer cluster records

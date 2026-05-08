@@ -26,7 +26,7 @@ ax2.tick_params(axis='y', labelcolor='forestgreen')
 ax2.set_ylim(0, 1.0)
 
 # Add a title
-plt.title('Figure 2.1: Relationship Between Rice Phenology, NDVI, and Rainfall', fontsize=14, fontweight='bold', pad=15)
+plt.title('Relationship Between Rice Phenology, NDVI, and Rainfall', fontsize=14, fontweight='bold', pad=15)
 
 # Combine legends from both axes
 lines_1, labels_1 = ax1.get_legend_handles_labels()
