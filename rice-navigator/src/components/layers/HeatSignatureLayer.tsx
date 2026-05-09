@@ -20,10 +20,10 @@ interface Props {
   metrics: Record<string, StateMetrics> | null;
 }
 
-// Map GADM NAME_1 → our CSV state names
+// Map GADM NAME_1 → our CSV state names (must match csvProcessor state keys exactly)
 const STATE_NAME_MAP: Record<string, string> = {
   Kano:    "Kano",
-  Katsina: "Katsina",
+  Kebbi:   "Kebbi",
   Niger:   "Niger",
   Jigawa:  "Jigawa",
   Ebonyi:  "Ebonyi",
@@ -134,7 +134,11 @@ export const HeatSignatureLayer = ({ geoData, metrics }: Props) => {
       const m = metrics[csvStateName];
       const stateInfo = stateLatRanges[csvStateName];
 
-      if (!m || !stateInfo) return { ...f, properties: { ...f.properties, fillColor: "#aaa" } };
+      if (!m || !stateInfo) {
+        // Fallback: use Nigeria average temperature so no LGA shows grey
+        const fallbackColor = tempToHex(28.0);
+        return { ...f, properties: { ...f.properties, fillColor: fallbackColor, temp: "28.0" } };
+      }
 
       const [lat, lng] = centroidOf(f);
       const temp = lgaTemp(lat, lng, m.avgTemperature, stateInfo.latMin, stateInfo.latMax, stateInfo.seed);
