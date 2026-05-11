@@ -102,8 +102,12 @@ const HeatPane = () => {
   useEffect(() => {
     if (!map.getPane("heatPane")) {
       map.createPane("heatPane");
-      map.getPane("heatPane")!.style.zIndex = "350";
-      map.getPane("heatPane")!.style.pointerEvents = "none";
+      const pane = map.getPane("heatPane")!;
+      pane.style.zIndex = "350";
+      pane.style.pointerEvents = "none";
+      // multiply blend: dark basemap features (roads, labels, borders) multiply through
+      // the heat color — map details visually sit ON TOP of the design
+      (pane.style as any).mixBlendMode = "multiply";
     }
   }, [map]);
   return null;
@@ -175,7 +179,7 @@ export const HeatSignatureLayer = ({ geoData, metrics }: Props) => {
         pane="heatPane"
         style={(feature: any) => ({
           fillColor:   feature?.properties?.fillColor ?? "#ff6400",
-          fillOpacity: 0.72,
+          fillOpacity: 0.82,
           color:       feature?.properties?.fillColor ?? "#ff6400",
           weight:      0,
           opacity:     0,
