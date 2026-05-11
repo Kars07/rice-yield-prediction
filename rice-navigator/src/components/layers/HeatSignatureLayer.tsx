@@ -154,29 +154,17 @@ export const HeatSignatureLayer = ({ geoData, metrics }: Props) => {
 
   return (
     <>
-      {/* LGA fill — each region coloured by its temperature */}
+      {/* LGA fill — each region coloured by its temperature, no border lines */}
       <GeoJSON
         key="lga-heat-fill"
         data={coloredLgaGeoJson}
         style={(feature: any) => ({
-          fillColor:   feature?.properties?.fillColor ?? "#aaa",
-          fillOpacity: 0.82,
-          color:       "#111",      // LGA boundary line
-          weight:      0.8,         // thin line — matches basemap LGA lines
-          opacity:     0.7,
+          fillColor:   feature?.properties?.fillColor ?? "#ff6400",
+          fillOpacity: 0.85,
+          color:       feature?.properties?.fillColor ?? "#ff6400",
+          weight:      0,
+          opacity:     0,
         })}
-      />
-
-      {/* State outlines on top — thicker for visual hierarchy */}
-      <GeoJSON
-        key="state-outlines"
-        data={geoData}
-        style={{
-          fillOpacity: 0,
-          color:       "#111",
-          weight:      2,
-          opacity:     0.9,
-        }}
       />
 
       {/* Legend */}
