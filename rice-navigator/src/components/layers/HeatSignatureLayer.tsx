@@ -1,33 +1,16 @@
-/**
- * HeatSignatureLayer — LGA-level choropleth
- *
- * Uses GADM ADM2 (LGA) GeoJSON. Each LGA polygon is filled with
- * its own temperature color computed from:
- *   - state average temperature (from CSV metrics)
- *   - latitude bias (north Nigeria hotter)
- *   - LGA centroid-based spatial variation (smooth directional bands)
- *
- * LGA boundaries are already visible on the basemap — this layer
- * colours them and draws their outlines on top.
- */
-
-import { useEffect, useState, useMemo } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, useMemo } from "react";
 import { GeoJSON, useMap } from "react-leaflet";
+import L from "leaflet";
 import { type StateMetrics } from "@/data/csvProcessor";
 
 interface Props {
-  geoData: GeoJSON.FeatureCollection;   // state-level (for state outlines)
+  geoData: GeoJSON.FeatureCollection;
   metrics: Record<string, StateMetrics> | null;
 }
 
-// Map GADM NAME_1 → our CSV state names (must match csvProcessor state keys exactly)
 const STATE_NAME_MAP: Record<string, string> = {
-  Kano:    "Kano",
-  Kebbi:   "Kebbi",
-  Niger:   "Niger",
-  Jigawa:  "Jigawa",
-  Ebonyi:  "Ebonyi",
-  Taraba:  "Taraba",
+  Kano: "Kano", Kebbi: "Kebbi", Niger: "Niger",
+  Jigawa: "Jigawa", Ebonyi: "Ebonyi", Taraba: "Taraba",
 };
 
 function centroidOf(feature: any): [number, number] {
@@ -54,25 +37,18 @@ function hashStr(s: string): number {
   return h >>> 0;
 }
 
-// Temperature for one LGA based on its centroid position
-function lgaTemp(
-  lat: number, lng: number,
-  stateAvg: number,
-  stateLatMin: number, stateLatMax: number,
-  stateSeed: number
-): number {
-  const latBias = ((lat - stateLatMin) / (stateLatMax - stateLatMin || 1) - 0.5) * 4.0;
-  const s = stateSeed * 0.001;
+function lgaTemp(lat: number, lng: number, stateAvg: number, latMin: number, latMax: number, seed: number): number {
+  const latBias = ((lat - latMin) / (latMax - latMin || 1) - 0.5) * 4.0;
+  const s = seed * 0.001;
   const v = (
-    Math.sin(lat * 8.0 + lng * 3.1 + s)       * 0.42 +
+    Math.sin(lat * 8.0 + lng * 3.1 + s) * 0.42 +
     Math.sin(lat * 3.2 - lng * 6.8 + s * 1.5) * 0.35 +
-    Math.sin(lat * 13  + s * 2.1)              * 0.15 +
-    Math.sin(lng * 9.4 + s * 0.7)              * 0.08
+    Math.sin(lat * 13 + s * 2.1) * 0.15 +
+    Math.sin(lng * 9.4 + s * 0.7) * 0.08
   ) * 2.8;
   return Math.max(24, Math.min(32, stateAvg + latBias + v));
 }
 
-// Nigeria 24–32°C → full yellow → dark brown ramp
 const STOPS = [
   { t: 0.00, r: 255, g: 255, b: 0   },
   { t: 0.22, r: 255, g: 190, b: 0   },
@@ -96,97 +72,103 @@ function tempToHex(temp: number): string {
   return "#291000";
 }
 
-// Creates a dedicated Leaflet pane below overlayPane (z:400) so heat never covers markers or UI
-const HeatPane = () => {
-  const map = useMap();
-  useEffect(() => {
-    if (!map.getPane("heatPane")) {
-      map.createPane("heatPane");
-      const pane = map.getPane("heatPane")!;
-      pane.style.zIndex = "350";
-      pane.style.pointerEvents = "none";
-      // multiply blend: dark basemap features (roads, labels, borders) multiply through
-      // the heat color — map details visually sit ON TOP of the design
-      (pane.style as any).mixBlendMode = "multiply";
-    }
-  }, [map]);
-  return null;
-};
+// Lower fillOpacity as you zoom in — basemap text/roads show through clearly
+function opacityForZoom(z: number): number {
+  if (z <= 7)  return 0.78;
+  if (z <= 8)  return 0.68;
+  if (z <= 9)  return 0.55;
+  if (z <= 10) return 0.40;
+  if (z <= 11) return 0.26;
+  return 0.15;
+}
 
 export const HeatSignatureLayer = ({ geoData, metrics }: Props) => {
-  const [lgaGeoJson, setLgaGeoJson] = useState<GeoJSON.FeatureCollection | null>(null);
+  const map = useMap();
+
+  // fillOpacity state — changing key forces layer recreation with new opacity
+  const [fillOpacity, setFillOpacity] = useState(0.78);
+  useLayoutEffect(() => {
+    setFillOpacity(opacityForZoom(map.getZoom()));
+  }, [map]);
+
+  // Pane setup — z-order only, NO blend mode (blend modes reduce text contrast)
+  useEffect(() => {
+    if (!map.getPane("heatPane")) map.createPane("heatPane");
+    const pane = map.getPane("heatPane")!;
+    pane.style.zIndex = "350";
+    pane.style.pointerEvents = "none";
+    // Remove any stale blend mode from previous sessions
+    (pane.style as any).mixBlendMode = "normal";
+  }, [map]);
+
+  // Zoom listener — updates fillOpacity state → triggers re-render → react-leaflet
+  // detects style prop changed → calls instance.setStyle() on all 159 LGA paths
+  useEffect(() => {
+    const onZoomEnd = () => setFillOpacity(opacityForZoom(map.getZoom()));
+    map.on("zoomend", onZoomEnd);
+    return () => { map.off("zoomend", onZoomEnd); };
+  }, [map]);
 
   // Fetch LGA GeoJSON once
+  const [lgaGeoJson, setLgaGeoJson] = useState<GeoJSON.FeatureCollection | null>(null);
   useEffect(() => {
     fetch("/nigeria_lgas.geojson")
       .then(r => r.json())
       .then((raw: GeoJSON.FeatureCollection) => {
-        // Filter to only our 6 rice states
-        const filtered: GeoJSON.Feature[] = raw.features.filter(
-          (f: any) => STATE_NAME_MAP[f.properties?.NAME_1] !== undefined
-        );
-        setLgaGeoJson({ type: "FeatureCollection", features: filtered });
+        setLgaGeoJson({
+          type: "FeatureCollection",
+          features: raw.features.filter((f: any) => STATE_NAME_MAP[f.properties?.NAME_1]),
+        });
       })
       .catch(console.error);
   }, []);
 
-  // Pre-compute per-state lat range and seed from the state GeoJSON
   const stateLatRanges = useMemo(() => {
-    const map: Record<string, { latMin: number; latMax: number; seed: number }> = {};
+    const out: Record<string, { latMin: number; latMax: number; seed: number }> = {};
     geoData.features.forEach((f: any) => {
       const name: string = f?.properties?.shapeName ?? "";
       const [latMin, latMax] = bboxLatRange(f);
-      map[name] = { latMin, latMax, seed: hashStr(name) };
+      out[name] = { latMin, latMax, seed: hashStr(name) };
     });
-    return map;
+    return out;
   }, [geoData]);
 
-  // Build coloured LGA GeoJSON
   const coloredLgaGeoJson = useMemo(() => {
     if (!lgaGeoJson || !metrics) return null;
-
     const features = lgaGeoJson.features.map((f: any) => {
-      const gadmStateName: string = f.properties?.NAME_1 ?? "";
-      const csvStateName = STATE_NAME_MAP[gadmStateName] ?? gadmStateName;
-      const m = metrics[csvStateName];
-      const stateInfo = stateLatRanges[csvStateName];
-
-      if (!m || !stateInfo) {
-        // Fallback: use Nigeria average temperature so no LGA shows grey
-        const fallbackColor = tempToHex(28.0);
-        return { ...f, properties: { ...f.properties, fillColor: fallbackColor, temp: "28.0" } };
+      const csvName = STATE_NAME_MAP[f.properties?.NAME_1] ?? "";
+      const m = metrics[csvName];
+      const si = stateLatRanges[csvName];
+      if (!m || !si) {
+        return { ...f, properties: { ...f.properties, fillColor: tempToHex(28.0) } };
       }
-
       const [lat, lng] = centroidOf(f);
-      const temp = lgaTemp(lat, lng, m.avgTemperature, stateInfo.latMin, stateInfo.latMax, stateInfo.seed);
-      const fillColor = tempToHex(temp);
-
-      return { ...f, properties: { ...f.properties, fillColor, temp: temp.toFixed(1) } };
+      const temp = lgaTemp(lat, lng, m.avgTemperature, si.latMin, si.latMax, si.seed);
+      return { ...f, properties: { ...f.properties, fillColor: tempToHex(temp) } };
     });
-
     return { type: "FeatureCollection" as const, features };
   }, [lgaGeoJson, metrics, stateLatRanges]);
+
+  // style function — new reference when fillOpacity changes → react-leaflet calls setStyle()
+  const lgaStyle = useCallback((feature: any) => ({
+    fillColor:   feature?.properties?.fillColor ?? "#ff6400",
+    fillOpacity,
+    color:       feature?.properties?.fillColor ?? "#ff6400",
+    weight:      0,
+    opacity:     0,
+  }), [fillOpacity]);
 
   if (!coloredLgaGeoJson) return null;
 
   return (
     <>
-      <HeatPane />
-      {/* LGA fill — each region coloured by its temperature, no border lines */}
       <GeoJSON
-        key="lga-heat-fill"
+        key={`lga-heat-fill-${fillOpacity}`}
         data={coloredLgaGeoJson}
         pane="heatPane"
-        style={(feature: any) => ({
-          fillColor:   feature?.properties?.fillColor ?? "#ff6400",
-          fillOpacity: 0.82,
-          color:       feature?.properties?.fillColor ?? "#ff6400",
-          weight:      0,
-          opacity:     0,
-        })}
+        style={lgaStyle}
       />
 
-      {/* Legend */}
       <div
         className="absolute z-[1000] bg-black/85 backdrop-blur-md text-white px-5 py-4 rounded-2xl shadow-2xl border border-white/15"
         style={{ bottom: "90px", left: "50%", transform: "translateX(-50%)", minWidth: 320 }}
