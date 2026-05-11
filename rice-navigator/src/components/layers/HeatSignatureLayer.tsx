@@ -12,7 +12,7 @@
  */
 
 import { useEffect, useState, useMemo } from "react";
-import { GeoJSON } from "react-leaflet";
+import { GeoJSON, useMap } from "react-leaflet";
 import { type StateMetrics } from "@/data/csvProcessor";
 
 interface Props {
@@ -96,6 +96,19 @@ function tempToHex(temp: number): string {
   return "#291000";
 }
 
+// Creates a dedicated Leaflet pane below overlayPane (z:400) so heat never covers markers or UI
+const HeatPane = () => {
+  const map = useMap();
+  useEffect(() => {
+    if (!map.getPane("heatPane")) {
+      map.createPane("heatPane");
+      map.getPane("heatPane")!.style.zIndex = "350";
+      map.getPane("heatPane")!.style.pointerEvents = "none";
+    }
+  }, [map]);
+  return null;
+};
+
 export const HeatSignatureLayer = ({ geoData, metrics }: Props) => {
   const [lgaGeoJson, setLgaGeoJson] = useState<GeoJSON.FeatureCollection | null>(null);
 
@@ -154,13 +167,15 @@ export const HeatSignatureLayer = ({ geoData, metrics }: Props) => {
 
   return (
     <>
+      <HeatPane />
       {/* LGA fill — each region coloured by its temperature, no border lines */}
       <GeoJSON
         key="lga-heat-fill"
         data={coloredLgaGeoJson}
+        pane="heatPane"
         style={(feature: any) => ({
           fillColor:   feature?.properties?.fillColor ?? "#ff6400",
-          fillOpacity: 0.85,
+          fillOpacity: 0.72,
           color:       feature?.properties?.fillColor ?? "#ff6400",
           weight:      0,
           opacity:     0,
