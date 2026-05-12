@@ -153,9 +153,9 @@ export const HeatSignatureLayer = ({ geoData, metrics }: Props) => {
   const lgaStyle = useCallback((feature: any) => ({
     fillColor:   feature?.properties?.fillColor ?? "#ff6400",
     fillOpacity,
-    color:       feature?.properties?.fillColor ?? "#ff6400",
-    weight:      0,
-    opacity:     0,
+    color:       "#111",   // inner LGA boundary — slightly thinner than state border
+    weight:      1.0,
+    opacity:     0.72,
   }), [fillOpacity]);
 
   if (!coloredLgaGeoJson) return null;
@@ -167,6 +167,19 @@ export const HeatSignatureLayer = ({ geoData, metrics }: Props) => {
         data={coloredLgaGeoJson}
         pane="heatPane"
         style={lgaStyle}
+      />
+
+      {/* State outer borders — weight matches old inner LGA line (~1.5px) */}
+      <GeoJSON
+        key={`state-borders-${fillOpacity}`}
+        data={geoData}
+        pane="heatPane"
+        style={{
+          fillOpacity: 0,
+          color: "#111",
+          weight: 1.5,
+          opacity: 0.92,
+        }}
       />
 
       <div
