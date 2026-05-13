@@ -38,27 +38,30 @@ function hashStr(s: string): number {
 }
 
 function lgaTemp(lat: number, lng: number, stateAvg: number, latMin: number, latMax: number, seed: number): number {
-  const latBias = ((lat - latMin) / (latMax - latMin || 1) - 0.5) * 4.0;
+  const latBias = ((lat - latMin) / (latMax - latMin || 1) - 0.5) * 5.0;
   const s = seed * 0.001;
   const v = (
     Math.sin(lat * 8.0 + lng * 3.1 + s) * 0.42 +
     Math.sin(lat * 3.2 - lng * 6.8 + s * 1.5) * 0.35 +
     Math.sin(lat * 13 + s * 2.1) * 0.15 +
     Math.sin(lng * 9.4 + s * 0.7) * 0.08
-  ) * 2.8;
-  return Math.max(24, Math.min(32, stateAvg + latBias + v));
+  ) * 4.8;
+  return Math.max(20, Math.min(34, stateAvg + latBias + v));
 }
 
+// Multi-hue scientific ramp — matches real GIS lava/thermal probability maps
+// pale yellow-green → bright yellow → vivid orange → orange-red → bright red → deep red → dark maroon
 const STOPS = [
-  { t: 0.00, r: 255, g: 255, b: 0   },
-  { t: 0.22, r: 255, g: 190, b: 0   },
-  { t: 0.42, r: 255, g: 100, b: 0   },
-  { t: 0.62, r: 220, g: 25,  b: 0   },
-  { t: 0.82, r: 155, g: 0,   b: 0   },
-  { t: 1.00, r: 41,  g: 16,  b: 0   },
+  { t: 0.00, r: 222, g: 235, b: 140 },  // 24°C — pale yellow-green (cool terrain)
+  { t: 0.18, r: 248, g: 218, b: 20 },  // 25.4°C — bright scientific yellow
+  { t: 0.34, r: 252, g: 150, b: 0 },  // 26.7°C — vivid amber-orange
+  { t: 0.50, r: 235, g: 68, b: 0 },  // 28°C — hot orange-red
+  { t: 0.65, r: 196, g: 18, b: 0 },  // 29.2°C — bright volcanic red
+  { t: 0.80, r: 130, g: 5, b: 0 },  // 30.4°C — deep rich red
+  { t: 1.00, r: 52, g: 0, b: 0 },  // 32°C+ — near-black maroon (hottest)
 ];
 function tempToHex(temp: number): string {
-  const v = Math.min(1, Math.max(0, (temp - 24) / 8));
+  const v = Math.min(1, Math.max(0, (temp - 20) / 14)); // 20–34°C → full palette range
   for (let i = 0; i < STOPS.length - 1; i++) {
     const lo = STOPS[i], hi = STOPS[i + 1];
     if (v >= lo.t && v <= hi.t) {
@@ -72,33 +75,58 @@ function tempToHex(temp: number): string {
   return "#291000";
 }
 
-// Lower fillOpacity as you zoom in — basemap text/roads show through clearly
+// Keep colors vivid at all zoom levels — multiply blend mode lets map details show through
 function opacityForZoom(z: number): number {
-  if (z <= 7)  return 0.78;
-  if (z <= 8)  return 0.68;
-  if (z <= 9)  return 0.55;
-  if (z <= 10) return 0.40;
-  if (z <= 11) return 0.26;
-  return 0.15;
+  if (z <= 11) return 0.90;
+  return 0.78;  // only slight fade at extreme close-up zoom
 }
 
 export const HeatSignatureLayer = ({ geoData, metrics }: Props) => {
   const map = useMap();
 
   // fillOpacity state — changing key forces layer recreation with new opacity
-  const [fillOpacity, setFillOpacity] = useState(0.78);
+  const [fillOpacity, setFillOpacity] = useState(0.90);
   useLayoutEffect(() => {
     setFillOpacity(opacityForZoom(map.getZoom()));
   }, [map]);
 
-  // Pane setup — z-order only, NO blend mode (blend modes reduce text contrast)
+  // Pane setup + cinematic animation injection
   useEffect(() => {
-    if (!map.getPane("heatPane")) map.createPane("heatPane");
-    const pane = map.getPane("heatPane")!;
-    pane.style.zIndex = "350";
-    pane.style.pointerEvents = "none";
-    // Remove any stale blend mode from previous sessions
-    (pane.style as any).mixBlendMode = "normal";
+    // Inject CSS keyframes once
+    if (!document.getElementById('heat-cinematic-style')) {
+      const el = document.createElement('style');
+      el.id = 'heat-cinematic-style';
+      el.textContent = `
+        @keyframes heatBreath {
+          0%, 100% { filter: brightness(1.0)  saturate(1.0);  }
+          50%       { filter: brightness(1.08) saturate(1.18); }
+        }
+        @keyframes heatShimmer {
+          0%   { background-position: -250% 0; opacity: 0;  }
+          10%  { opacity: 1; }
+          90%  { opacity: 1; }
+          100% { background-position: 350% 0;  opacity: 0;  }
+        }
+        @keyframes heatGlowPulse {
+          0%, 100% { opacity: 0.15; transform: scale(1.0);   }
+          50%       { opacity: 0.60; transform: scale(1.06); }
+        }
+        @keyframes heatEdgePulse {
+          0%, 100% { opacity: 0.0; }
+          50%       { opacity: 0.35; }
+        }
+      `;
+      document.head.appendChild(el);
+    }
+
+    if (!map.getPane('heatPane')) map.createPane('heatPane');
+    const pane = map.getPane('heatPane')!;
+    pane.style.zIndex = '350';
+    pane.style.pointerEvents = 'none';
+    (pane.style as any).mixBlendMode = 'multiply'; // dark basemap text/roads multiply to stay readable
+    // Cinematic breathing animation on the entire heat layer
+    pane.style.animation = 'heatBreath 4s ease-in-out infinite';
+    pane.style.willChange = 'filter';
   }, [map]);
 
   // Zoom listener — updates fillOpacity state → triggers re-render → react-leaflet
@@ -151,11 +179,11 @@ export const HeatSignatureLayer = ({ geoData, metrics }: Props) => {
 
   // style function — new reference when fillOpacity changes → react-leaflet calls setStyle()
   const lgaStyle = useCallback((feature: any) => ({
-    fillColor:   feature?.properties?.fillColor ?? "#ff6400",
+    fillColor: feature?.properties?.fillColor ?? "#ff6400",
     fillOpacity,
-    color:       "#111",   // inner LGA boundary — slightly thinner than state border
-    weight:      1.0,
-    opacity:     0.72,
+    color: "#111",   // inner LGA boundary — slightly thinner than state border
+    weight: 0.5,
+    opacity: 0.72,
   }), [fillOpacity]);
 
   if (!coloredLgaGeoJson) return null;
@@ -177,11 +205,39 @@ export const HeatSignatureLayer = ({ geoData, metrics }: Props) => {
         style={{
           fillOpacity: 0,
           color: "#111",
-          weight: 1.5,
+          weight: 0.7,
           opacity: 0.92,
         }}
       />
 
+      {/* ── Cinematic shimmer sweep ── diagonal golden shine ─────────── */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        zIndex: 395, pointerEvents: 'none', overflow: 'hidden',
+        backgroundImage: 'linear-gradient(108deg, transparent, rgba(255,210,80,0.18) 40%, rgba(255,240,160,0.10) 50%, rgba(255,210,80,0.18) 60%, transparent)',
+        backgroundSize: '300% 100%',
+        animation: 'heatShimmer 9s ease-in-out infinite',
+      }} />
+
+      {/* ── Radial amber glow ── warm pulse from map center ───────────── */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        zIndex: 394, pointerEvents: 'none',
+        background: 'radial-gradient(ellipse 55% 40% at 50% 50%, rgba(255,140,20,0.10) 0%, rgba(200,80,0,0.03) 55%, transparent 100%)',
+        animation: 'heatGlowPulse 5s ease-in-out infinite',
+        transformOrigin: 'center',
+      }} />
+
+      {/* ── Edge heat vignette ── breathes at perimeter ───────────────── */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        zIndex: 393, pointerEvents: 'none',
+        background: 'radial-gradient(ellipse 100% 100% at 50% 50%, transparent 45%, rgba(120,15,0,0.14) 100%)',
+        animation: 'heatEdgePulse 6s ease-in-out infinite',
+        animationDelay: '1.5s',
+      }} />
+
+      {/* Legend */}
       <div
         className="absolute z-[1000] bg-black/85 backdrop-blur-md text-white px-5 py-4 rounded-2xl shadow-2xl border border-white/15"
         style={{ bottom: "90px", left: "50%", transform: "translateX(-50%)", minWidth: 320 }}
@@ -190,7 +246,7 @@ export const HeatSignatureLayer = ({ geoData, metrics }: Props) => {
           Surface Temperature · LGA Regions
         </div>
         <div className="h-3.5 w-full rounded-full mb-2"
-          style={{ background: "linear-gradient(to right, #ffff00, #ffbe00 22%, #ff6400 42%, #dc1900 62%, #9b0000 82%, #291000)" }} />
+          style={{ background: "linear-gradient(to right, #deeb8c, #f8da14 18%, #fc9600 34%, #eb4400 50%, #c41200 65%, #820500 80%, #340000)" }} />
         <div className="flex justify-between text-[9px] font-semibold text-white/60">
           <span>24°C</span><span>26°C</span><span>28°C</span><span>30°C</span><span>32°C+</span>
         </div>
