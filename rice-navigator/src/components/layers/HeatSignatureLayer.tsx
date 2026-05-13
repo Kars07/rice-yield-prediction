@@ -90,16 +90,29 @@ export const HeatSignatureLayer = ({ geoData, metrics }: Props) => {
     setFillOpacity(opacityForZoom(map.getZoom()));
   }, [map]);
 
-  // Pane setup + cinematic animation injection
+  // Pane setup + cinematic animation injection + fluid spread effect
   useEffect(() => {
-    // Inject CSS keyframes once
+    // Inject SVG Heat Haze distortion filter + CSS keyframes
     if (!document.getElementById('heat-cinematic-style')) {
+      const svg = document.createElement('div');
+      svg.innerHTML = `
+        <svg id="heat-haze-svg" width="0" height="0" style="position:absolute;z-index:-1;pointer-events:none;">
+          <filter id="heatHaze">
+            <feTurbulence type="fractalNoise" baseFrequency="0.015" numOctaves="2" result="noise">
+              <animate attributeName="baseFrequency" values="0.015;0.025;0.015" dur="6s" repeatCount="indefinite" />
+            </feTurbulence>
+            <feDisplacementMap in="SourceGraphic" in2="noise" scale="4" xChannelSelector="R" yChannelSelector="G" />
+          </filter>
+        </svg>
+      `;
+      document.body.appendChild(svg);
+
       const el = document.createElement('style');
       el.id = 'heat-cinematic-style';
       el.textContent = `
         @keyframes heatBreath {
-          0%, 100% { filter: brightness(1.0)  saturate(1.0);  }
-          50%       { filter: brightness(1.08) saturate(1.18); }
+          0%, 100% { filter: url(#heatHaze) brightness(1.0)  saturate(1.0);  }
+          50%       { filter: url(#heatHaze) brightness(1.12) saturate(1.25); }
         }
         @keyframes heatShimmer {
           0%   { background-position: -250% 0; opacity: 0;  }
@@ -119,12 +132,21 @@ export const HeatSignatureLayer = ({ geoData, metrics }: Props) => {
       document.head.appendChild(el);
     }
 
+    // 1. Fluid Glow Pane (rendered behind, heavily blurred)
+    if (!map.getPane('heatPaneGlow')) map.createPane('heatPaneGlow');
+    const glowPane = map.getPane('heatPaneGlow')!;
+    glowPane.style.zIndex = '340';
+    glowPane.style.pointerEvents = 'none';
+    glowPane.style.filter = 'blur(35px)'; // Heavier blur for smoother liquid spread
+    (glowPane.style as any).mixBlendMode = 'multiply';
+    glowPane.style.opacity = '1.0'; // Max opacity for thickest fluid base
+
+    // 2. Main Heat Pane (sharp, multiply blend)
     if (!map.getPane('heatPane')) map.createPane('heatPane');
     const pane = map.getPane('heatPane')!;
     pane.style.zIndex = '350';
     pane.style.pointerEvents = 'none';
-    (pane.style as any).mixBlendMode = 'multiply'; // dark basemap text/roads multiply to stay readable
-    // Cinematic breathing animation on the entire heat layer
+    (pane.style as any).mixBlendMode = 'multiply';
     pane.style.animation = 'heatBreath 4s ease-in-out infinite';
     pane.style.willChange = 'filter';
   }, [map]);
@@ -177,19 +199,32 @@ export const HeatSignatureLayer = ({ geoData, metrics }: Props) => {
     return { type: "FeatureCollection" as const, features };
   }, [lgaGeoJson, metrics, stateLatRanges]);
 
-  // style function — new reference when fillOpacity changes → react-leaflet calls setStyle()
+  const lgaGlowStyle = useCallback((feature: any) => ({
+    fillColor:   feature?.properties?.fillColor ?? "#ff6400",
+    fillOpacity: fillOpacity * 1.1, // Oversaturate the fluid base for thick liquid mass
+    color:       "transparent",
+    weight:      0,
+  }), [fillOpacity]);
+
   const lgaStyle = useCallback((feature: any) => ({
-    fillColor: feature?.properties?.fillColor ?? "#ff6400",
-    fillOpacity,
-    color: "#111",   // inner LGA boundary — slightly thinner than state border
-    weight: 0.5,
-    opacity: 0.72,
+    fillColor:   feature?.properties?.fillColor ?? "#ff6400",
+    fillOpacity: fillOpacity * 0.65, // Increase sharp opacity to anchor the thick colors
+    color:       "#111",
+    weight:      0.5,
+    opacity:     0.72,
   }), [fillOpacity]);
 
   if (!coloredLgaGeoJson) return null;
 
   return (
     <>
+      <GeoJSON
+        key={`lga-heat-glow-${fillOpacity}`}
+        data={coloredLgaGeoJson}
+        pane="heatPaneGlow"
+        style={lgaGlowStyle}
+      />
+
       <GeoJSON
         key={`lga-heat-fill-${fillOpacity}`}
         data={coloredLgaGeoJson}
