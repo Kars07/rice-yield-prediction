@@ -220,16 +220,20 @@ export const HeatSignatureLayer = ({ geoData, metrics }: Props) => {
         const numPatches = Math.min(3, Math.floor(height * 2.5)); // 1 to 3 distinct sub-patches
         
         for (let i = 0; i < numPatches; i++) {
-          const pLat = lat + (Math.sin(s + i * 1.3) * height * 0.35);
-          const pLng = lng + (Math.cos(s + i * 2.7) * height * 0.35);
+          // Keep patches tightly clustered near the centroid to prevent boundary spill (0.12 instead of 0.35)
+          const pLat = lat + (Math.sin(s + i * 1.3) * height * 0.12);
+          const pLng = lng + (Math.cos(s + i * 2.7) * height * 0.12);
           
-          // Introduce a +/- 2.2 degree local variance to break up uniform colors softly
-          const tempVariance = Math.sin(s + i * 4.1) * 2.2; 
+          // Introduce a +/- 2.8 degree local variance for fluid color mixing
+          const tempVariance = Math.sin(s + i * 4.1) * 2.8; 
           const baseTemp = lgaTemp(lat, lng, m.avgTemperature, si.latMin, si.latMax, si.seed);
           const patchTemp = Math.max(20, Math.min(34, baseTemp + tempVariance));
           
-          // Much larger patches so they bleed as big waves, not dots (10km to 28km radius)
-          const radius = 10000 + Math.abs(Math.sin(s + i * 1.7)) * 18000;
+          // Constrain maximum radius to roughly 20% of the LGA's physical height
+          // This guarantees the patch + its blur will naturally fade out BEFORE crossing the LGA border
+          const maxRadiusMeters = height * 111000 * 0.20; 
+          const radius = maxRadiusMeters * 0.6 + Math.abs(Math.sin(s + i * 1.7)) * (maxRadiusMeters * 0.4);
+          
           patches.push({ lat: pLat, lng: pLng, temp: patchTemp, radius });
         }
       }
@@ -269,7 +273,7 @@ export const HeatSignatureLayer = ({ geoData, metrics }: Props) => {
         <Circle
           key={`patch-glow-${i}-${fillOpacity}`}
           center={[p.lat, p.lng]}
-          radius={p.radius * 2.0} // Massive radius to ensure they overlap and bleed seamlessly
+          radius={p.radius} // Strict radius to contain within LGA bounds
           pane="heatPaneGlow"
           pathOptions={{
             fillColor: tempToHex(p.temp),
