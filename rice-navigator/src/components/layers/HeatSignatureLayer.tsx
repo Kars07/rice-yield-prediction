@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, useMemo } from "react";
-import { GeoJSON, useMap } from "react-leaflet";
+import { GeoJSON, useMap, Circle } from "react-leaflet";
 import L from "leaflet";
 import { type StateMetrics } from "@/data/csvProcessor";
 
@@ -199,6 +199,44 @@ export const HeatSignatureLayer = ({ geoData, metrics }: Props) => {
     return { type: "FeatureCollection" as const, features };
   }, [lgaGeoJson, metrics, stateLatRanges]);
 
+  // Generate localized temperature variance patches for very large LGAs
+  const lgaPatches = useMemo(() => {
+    if (!lgaGeoJson || !metrics) return [];
+    const patches: { lat: number; lng: number; temp: number; radius: number }[] = [];
+    
+    lgaGeoJson.features.forEach((f: any) => {
+      const csvName = STATE_NAME_MAP[f.properties?.NAME_1] ?? "";
+      const m = metrics[csvName];
+      const si = stateLatRanges[csvName];
+      if (!m || !si) return;
+
+      const [lat, lng] = centroidOf(f);
+      const [latMin, latMax] = bboxLatRange(f);
+      const height = latMax - latMin;
+      
+      // Only target physically huge regions (e.g. > 0.45 degrees approx 50km)
+      if (height > 0.45) {
+        const s = si.seed + lat; // pseudo-random seed based on position
+        const numPatches = Math.min(3, Math.floor(height * 2.5)); // 1 to 3 distinct sub-patches
+        
+        for (let i = 0; i < numPatches; i++) {
+          const pLat = lat + (Math.sin(s + i * 1.3) * height * 0.35);
+          const pLng = lng + (Math.cos(s + i * 2.7) * height * 0.35);
+          
+          // Introduce a +/- 2.2 degree local variance to break up uniform colors softly
+          const tempVariance = Math.sin(s + i * 4.1) * 2.2; 
+          const baseTemp = lgaTemp(lat, lng, m.avgTemperature, si.latMin, si.latMax, si.seed);
+          const patchTemp = Math.max(20, Math.min(34, baseTemp + tempVariance));
+          
+          // Much larger patches so they bleed as big waves, not dots (10km to 28km radius)
+          const radius = 10000 + Math.abs(Math.sin(s + i * 1.7)) * 18000;
+          patches.push({ lat: pLat, lng: pLng, temp: patchTemp, radius });
+        }
+      }
+    });
+    return patches;
+  }, [lgaGeoJson, metrics, stateLatRanges]);
+
   const lgaGlowStyle = useCallback((feature: any) => ({
     fillColor:   feature?.properties?.fillColor ?? "#ff6400",
     fillOpacity: fillOpacity * 1.1, // Oversaturate the fluid base for thick liquid mass
@@ -218,6 +256,7 @@ export const HeatSignatureLayer = ({ geoData, metrics }: Props) => {
 
   return (
     <>
+      {/* ── Fluid Spread Layer (Blurred) ── */}
       <GeoJSON
         key={`lga-heat-glow-${fillOpacity}`}
         data={coloredLgaGeoJson}
@@ -225,12 +264,31 @@ export const HeatSignatureLayer = ({ geoData, metrics }: Props) => {
         style={lgaGlowStyle}
       />
 
+      {/* ── Intra-region variance patches (Fluid Glow) ── */}
+      {lgaPatches.map((p, i) => (
+        <Circle
+          key={`patch-glow-${i}-${fillOpacity}`}
+          center={[p.lat, p.lng]}
+          radius={p.radius * 2.0} // Massive radius to ensure they overlap and bleed seamlessly
+          pane="heatPaneGlow"
+          pathOptions={{
+            fillColor: tempToHex(p.temp),
+            fillOpacity: fillOpacity * 1.2,
+            color: "transparent",
+            weight: 0
+          }}
+        />
+      ))}
+
+      {/* ── Sharp Details Layer ── */}
       <GeoJSON
         key={`lga-heat-fill-${fillOpacity}`}
         data={coloredLgaGeoJson}
         pane="heatPane"
         style={lgaStyle}
       />
+
+      {/* Removed the sharp intra-region patches entirely — we only want them in the blurred glow pane */}
 
       {/* State outer borders — weight matches old inner LGA line (~1.5px) */}
       <GeoJSON
