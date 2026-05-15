@@ -11,6 +11,7 @@ import AdvancedRasterLayer from "@/components/AdvancedRasterLayer";
 import { HeatSignatureLayer } from "@/components/layers/HeatSignatureLayer";
 import { TemporalScatterLayer } from "@/components/layers/TemporalScatterLayer";
 import { WaterStressChoropleth } from "@/components/layers/WaterStressChoropleth";
+import { HealthyFieldsLayer } from "@/components/layers/HealthyFieldsLayer";
 import { statePassesFilter, type FeatureKey, type StateMetrics } from "@/data/csvProcessor";
 
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -450,7 +451,7 @@ const NigeriaMap = ({
       <MapLegend activeFeature={activeFeature} />
 
       {/* ── State Polygons ── */}
-      {filteredGeoData && !["heat_signatures", "rainfall_events", "water_stress"].includes(activeFeature) && (
+      {filteredGeoData && !["heat_signatures", "rainfall_events", "water_stress", "healthy_fields"].includes(activeFeature) && (
         <GeoJSON
           key={`states-${activeLayer}-${activeFeature}-${mapView}`}
           data={filteredGeoData}
@@ -468,6 +469,9 @@ const NigeriaMap = ({
       )}
       {filteredGeoData && activeFeature === "water_stress" && (
         <WaterStressChoropleth geoData={filteredGeoData as any} metrics={csvMetrics} />
+      )}
+      {filteredGeoData && activeFeature === "healthy_fields" && (
+        <HealthyFieldsLayer geoData={filteredGeoData as any} metrics={csvMetrics} />
       )}
 
       {/* ── Advanced Raster Overlays ── */}

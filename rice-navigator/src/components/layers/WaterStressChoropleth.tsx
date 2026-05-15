@@ -41,10 +41,10 @@ function hashStr(s: string): number {
 const WATER_STOPS = [
   { t: 0.00, r: 245, g: 235, b: 200 }, // Dry (pale beige)
   { t: 0.20, r: 180, g: 240, b: 240 }, // Mild (pale cyan)
-  { t: 0.40, r: 0,   g: 220, b: 255 }, // Normal (cyan)
-  { t: 0.60, r: 0,   g: 140, b: 255 }, // Wet (vivid blue)
-  { t: 0.80, r: 0,   g: 60,  b: 220 }, // High wet (deep blue)
-  { t: 1.00, r: 0,   g: 0,   b: 140 }, // Flooded (navy)
+  { t: 0.40, r: 0, g: 220, b: 255 }, // Normal (cyan)
+  { t: 0.60, r: 0, g: 140, b: 255 }, // Wet (vivid blue)
+  { t: 0.80, r: 0, g: 60, b: 220 }, // High wet (deep blue)
+  { t: 1.00, r: 0, g: 0, b: 140 }, // Flooded (navy)
 ];
 
 function waterToHex(score: number): string {
@@ -183,11 +183,11 @@ export const WaterStressChoropleth = ({ geoData, metrics }: Props) => {
       const csvName = STATE_NAME_MAP[f.properties?.NAME_1] ?? "";
       const si = stateLatRanges[csvName];
       if (!si) return { ...f, properties: { ...f.properties, fillColor: waterToHex(0.4) } };
-      
+
       const stateScore = getScore(csvName, metrics);
       const [lat, lng] = centroidOf(f);
       const score = lgaWater(lat, lng, stateScore, si.latMin, si.latMax, si.seed);
-      
+
       return { ...f, properties: { ...f.properties, fillColor: waterToHex(score) } };
     });
     return { type: "FeatureCollection" as const, features };
@@ -196,7 +196,7 @@ export const WaterStressChoropleth = ({ geoData, metrics }: Props) => {
   const lgaPatches = useMemo(() => {
     if (!lgaGeoJson || !metrics) return [];
     const patches: { lat: number; lng: number; score: number; radius: number; dots: { lat: number; lng: number; score: number; radius: number }[] }[] = [];
-    
+
     lgaGeoJson.features.forEach((f: any) => {
       const csvName = STATE_NAME_MAP[f.properties?.NAME_1] ?? "";
       const si = stateLatRanges[csvName];
@@ -205,34 +205,34 @@ export const WaterStressChoropleth = ({ geoData, metrics }: Props) => {
       const [lat, lng] = centroidOf(f);
       const [latMin, latMax] = bboxLatRange(f);
       const height = latMax - latMin;
-      
+
       if (height > 0.45) {
         const s = si.seed + lat;
         const numPatches = Math.min(3, Math.floor(height * 2.5));
-        
+
         for (let i = 0; i < numPatches; i++) {
           const pLat = lat + (Math.sin(s + i * 1.3) * height * 0.12);
           const pLng = lng + (Math.cos(s + i * 2.7) * height * 0.12);
-          
+
           const stateScore = getScore(csvName, metrics);
-          const waterVariance = Math.sin(s + i * 4.1) * 0.25; 
+          const waterVariance = Math.sin(s + i * 4.1) * 0.25;
           const baseScore = lgaWater(lat, lng, stateScore, si.latMin, si.latMax, si.seed);
           const patchScore = Math.max(0, Math.min(1, baseScore + waterVariance));
-          
-          const maxRadiusMeters = height * 111000 * 0.20; 
+
+          const maxRadiusMeters = height * 111000 * 0.20;
           const radius = maxRadiusMeters * 0.6 + Math.abs(Math.sin(s + i * 1.7)) * (maxRadiusMeters * 0.4);
-          
+
           const dots = [];
           const numDots = 2 + Math.floor(Math.abs(Math.sin(s + i * 3.1)) * 3);
           for (let d = 0; d < numDots; d++) {
-             const dLat = pLat + (Math.sin(s + d * 5.2) * (radius / 111000) * 0.4);
-             const dLng = pLng + (Math.cos(s + d * 7.3) * (radius / 111000) * 0.4);
-             const dRad = radius * (0.05 + Math.abs(Math.sin(s + d * 2.9)) * 0.10);
-             // Shift score up for intense deep water core
-             const dScore = Math.min(1, patchScore + 0.15 + Math.sin(s + d) * 0.1);
-             dots.push({ lat: dLat, lng: dLng, score: dScore, radius: dRad });
+            const dLat = pLat + (Math.sin(s + d * 5.2) * (radius / 111000) * 0.4);
+            const dLng = pLng + (Math.cos(s + d * 7.3) * (radius / 111000) * 0.4);
+            const dRad = radius * (0.05 + Math.abs(Math.sin(s + d * 2.9)) * 0.10);
+            // Shift score up for intense deep water core
+            const dScore = Math.min(1, patchScore + 0.15 + Math.sin(s + d) * 0.1);
+            dots.push({ lat: dLat, lng: dLng, score: dScore, radius: dRad });
           }
-          
+
           patches.push({ lat: pLat, lng: pLng, score: patchScore, radius, dots });
         }
       }
@@ -241,18 +241,18 @@ export const WaterStressChoropleth = ({ geoData, metrics }: Props) => {
   }, [lgaGeoJson, metrics, stateLatRanges]);
 
   const lgaGlowStyle = useCallback((feature: any) => ({
-    fillColor:   feature?.properties?.fillColor ?? "#3b82f6",
+    fillColor: feature?.properties?.fillColor ?? "#3b82f6",
     fillOpacity: fillOpacity * 1.1,
-    color:       "transparent",
-    weight:      0,
+    color: "transparent",
+    weight: 0,
   }), [fillOpacity]);
 
   const lgaStyle = useCallback((feature: any) => ({
-    fillColor:   feature?.properties?.fillColor ?? "#3b82f6",
+    fillColor: feature?.properties?.fillColor ?? "#3b82f6",
     fillOpacity: fillOpacity * 0.65,
-    color:       "#0f172a", // Dark border for crisp water sections
-    weight:      0.5,
-    opacity:     0.72,
+    color: "#0f172a", // Dark border for crisp water sections
+    weight: 0.5,
+    opacity: 0.72,
   }), [fillOpacity]);
 
   if (!coloredLgaGeoJson) return null;
