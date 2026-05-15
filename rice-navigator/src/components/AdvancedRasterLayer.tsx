@@ -24,7 +24,7 @@ const AdvancedRasterLayer = ({ geoData, activeFeature }: Props) => {
     if (!geoData) return;
 
     // We only generate Advanced Rasters for certain features that need "Scientific" representation
-    const needsGrid = ["ndvi_vigor", "risk_heatmap"].includes(activeFeature);
+    const needsGrid = ["yield_prediction", "ndvi_vigor", "risk_heatmap"].includes(activeFeature);
     const needsHeatmap = ["temp_stress"].includes(activeFeature);
 
     // Clean up previous layers
