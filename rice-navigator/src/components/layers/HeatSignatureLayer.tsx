@@ -149,6 +149,16 @@ export const HeatSignatureLayer = ({ geoData, metrics }: Props) => {
     (pane.style as any).mixBlendMode = 'multiply';
     pane.style.animation = 'heatBreath 4s ease-in-out infinite';
     pane.style.willChange = 'filter';
+
+    // 3. Thermal Core Dots Pane (soft edges, deep multiply blend)
+    if (!map.getPane('heatPaneDots')) map.createPane('heatPaneDots');
+    const dotsPane = map.getPane('heatPaneDots')!;
+    dotsPane.style.zIndex = '345';
+    dotsPane.style.pointerEvents = 'none';
+    dotsPane.style.filter = 'blur(10px)'; // Soft edges so the dots don't look artificial
+    (dotsPane.style as any).mixBlendMode = 'multiply';
+    dotsPane.style.opacity = '0.9';
+    pane.style.willChange = 'filter';
   }, [map]);
 
   // Zoom listener — updates fillOpacity state → triggers re-render → react-leaflet
@@ -202,7 +212,7 @@ export const HeatSignatureLayer = ({ geoData, metrics }: Props) => {
   // Generate localized temperature variance patches for very large LGAs
   const lgaPatches = useMemo(() => {
     if (!lgaGeoJson || !metrics) return [];
-    const patches: { lat: number; lng: number; temp: number; radius: number }[] = [];
+    const patches: { lat: number; lng: number; temp: number; radius: number; dots: { lat: number; lng: number; temp: number; radius: number }[] }[] = [];
     
     lgaGeoJson.features.forEach((f: any) => {
       const csvName = STATE_NAME_MAP[f.properties?.NAME_1] ?? "";
@@ -234,7 +244,24 @@ export const HeatSignatureLayer = ({ geoData, metrics }: Props) => {
           const maxRadiusMeters = height * 111000 * 0.20; 
           const radius = maxRadiusMeters * 0.6 + Math.abs(Math.sin(s + i * 1.7)) * (maxRadiusMeters * 0.4);
           
-          patches.push({ lat: pLat, lng: pLng, temp: patchTemp, radius });
+          // Generate 2 to 4 small, highly-concentrated dots scattered inside this fluid patch
+          const dots = [];
+          const numDots = 2 + Math.floor(Math.abs(Math.sin(s + i * 3.1)) * 3); // 2, 3, or 4 sub-dots
+          for (let d = 0; d < numDots; d++) {
+             // Scatter them around the parent patch center
+             const dLat = pLat + (Math.sin(s + d * 5.2) * (radius / 111000) * 0.4);
+             const dLng = pLng + (Math.cos(s + d * 7.3) * (radius / 111000) * 0.4);
+             
+             // Very small radii for distinct dot effect (5% to 15% of the parent patch size)
+             const dRad = radius * (0.05 + Math.abs(Math.sin(s + d * 2.9)) * 0.10);
+             
+             // Make them noticeably hotter/cooler for an intense core effect
+             const dTemp = Math.min(34, patchTemp + 1.2 + Math.sin(s + d) * 0.8);
+             
+             dots.push({ lat: dLat, lng: dLng, temp: dTemp, radius: dRad });
+          }
+          
+          patches.push({ lat: pLat, lng: pLng, temp: patchTemp, radius, dots });
         }
       }
     });
@@ -292,7 +319,21 @@ export const HeatSignatureLayer = ({ geoData, metrics }: Props) => {
         style={lgaStyle}
       />
 
-      {/* Removed the sharp intra-region patches entirely — we only want them in the blurred glow pane */}
+      {/* ── Intense Thermal Core Dots (Huge Regions Only) ── */}
+      {lgaPatches.flatMap(p => p.dots).map((d, i) => (
+        <Circle
+          key={`patch-dot-${i}-${fillOpacity}`}
+          center={[d.lat, d.lng]}
+          radius={d.radius} // Render the natively tiny sub-dots
+          pane="heatPaneDots"
+          pathOptions={{
+            fillColor: tempToHex(d.temp),
+            fillOpacity: fillOpacity * 0.9,
+            color: "transparent",
+            weight: 0
+          }}
+        />
+      ))}
 
       {/* State outer borders — weight matches old inner LGA line (~1.5px) */}
       <GeoJSON
