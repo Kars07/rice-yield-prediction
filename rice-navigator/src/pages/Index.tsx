@@ -8,6 +8,7 @@ import InfoSheet from "@/components/InfoSheet";
 import FeatureOverlayCards from "@/components/FeatureOverlayCards";
 import BottomNav from "@/components/BottomNav";
 import AlertsPage from "@/pages/AlertsPage";
+import YieldDashboard from "@/components/YieldDashboard";
 import { type RiceField } from "@/data/nigeriaRiceData";
 import { type LayerKey } from "@/data/layerSources";
 import { type FeatureKey } from "@/data/csvProcessor";
@@ -80,8 +81,8 @@ const Index = () => {
   return (
     <div className="h-screen w-screen overflow-hidden relative bg-background">
 
-      {/* MAP — always visible */}
-      <div className="w-full h-full">
+      {/* MAP — visible if in explore mode or alerts mode (underneath) */}
+      <div className={`w-full h-full absolute inset-0 ${activeTab === 'yield' ? 'hidden' : 'block'}`}>
         <NigeriaMap
           mapStyle={mapStyle}
           activeLayer={activeLayer}
@@ -125,6 +126,21 @@ const Index = () => {
           )}
         </>
       )}
+
+      {/* YIELD DASHBOARD */}
+      <AnimatePresence>
+        {activeTab === "yield" && (
+           <motion.div
+             initial={{ opacity: 0, scale: 0.98 }}
+             animate={{ opacity: 1, scale: 1 }}
+             exit={{ opacity: 0, scale: 0.98 }}
+             transition={{ duration: 0.3 }}
+             className="absolute inset-0 z-[400]"
+           >
+             <YieldDashboard />
+           </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ALERTS OVERLAY (RESPONSIVE) */}
       <AnimatePresence>

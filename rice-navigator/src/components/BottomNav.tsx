@@ -1,9 +1,10 @@
-import { Compass, Bell, Leaf } from "lucide-react";
+import { Compass, Bell, Leaf, LineChart } from "lucide-react";
 import { motion } from "framer-motion";
 
 const tabs = [
   { key: "explore", label: "Explore", icon: Compass },
-  { key: "alerts", label: "Alerts", icon: Bell },
+  { key: "alerts",  label: "Alerts",  icon: Bell },
+  { key: "yield",   label: "Yield",   icon: LineChart },
 ] as const;
 
 interface Props {

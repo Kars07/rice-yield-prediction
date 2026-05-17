@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { ThermometerSun, CloudRain, X, AlertTriangle, Sprout, Droplets, History, CloudOff, TrendingUp, TrendingDown } from "lucide-react";
 import type { FeatureKey, StateMetrics } from "@/data/csvProcessor";
+import { YieldCurveChart } from "./YieldCurveChart";
 
 interface Props {
   activeFeature: FeatureKey;
@@ -170,6 +171,9 @@ const FeatureOverlayCards = ({ activeFeature, stateName, metrics, onClose }: Pro
               <p className="font-bold text-foreground">±{rmse} t/ha</p>
             </div>
           </div>
+          
+          <YieldCurveChart stateName={stateName} height={180} />
+          
           <div className="p-2 rounded-lg flex gap-2 bg-emerald-500/15 text-emerald-700">
             <TrendingUp className="w-4 h-4 shrink-0 mt-0.5" />
             <p className="text-xs font-medium">
