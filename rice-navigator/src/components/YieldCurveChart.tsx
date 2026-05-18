@@ -22,7 +22,7 @@ export function YieldCurveChart({ stateName, height = "100%" }: Props) {
         setError(null);
         setPredictedYield(null);
 
-        const res = await fetch("http://localhost:8000/predict", {
+        const res = await fetch("https://rice-yield-prediction.onrender.com/predict", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ state: stateName }),
@@ -157,7 +157,7 @@ export function YieldCurveChart({ stateName, height = "100%" }: Props) {
           <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 bg-[#0f1117] text-red-400 text-center px-6">
             <span className="text-xl">⚠</span>
             <p className="text-xs font-medium">{error}</p>
-            <p className="text-[10px] text-muted-foreground">Make sure <code className="bg-white/10 px-1 rounded">python api.py</code> is running on port 8000</p>
+            <p className="text-[10px] text-muted-foreground">The cloud model API might be spinning up or temporarily unreachable.</p>
           </div>
         )}
         
