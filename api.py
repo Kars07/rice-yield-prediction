@@ -90,12 +90,25 @@ def predict_yield(req: PredictRequest):
         chart_dates = state_df['date'].dt.strftime('%Y-%m-%d').tolist()
         chart_ndvi = state_df['NDVI'].tolist()
 
+        # Generate simulated historical yield curves for TradingView chart
+        np.random.seed(hash(req.state) % (2**32))
+        years = [2018, 2019, 2020, 2021, 2022, 2023, 2024]
+        state_curve = []
+        region_curve = []
+        base = final_yield - 0.6
+        for y in years:
+            sv = base + np.random.uniform(-0.4, 0.4) + (y - 2018)*0.1
+            rv = base + np.random.uniform(-0.2, 0.2) + (y - 2018)*0.08
+            # lightweight-charts expects time as 'YYYY-MM-DD'
+            state_curve.append({"time": f"{y}-01-01", "value": round(sv, 2)})
+            region_curve.append({"time": f"{y}-01-01", "value": round(rv, 2)})
+
         return {
             "predicted_yield": final_yield,
             "current_temp": current_temp,
             "current_rain": current_rain,
-            "chart_dates": chart_dates,
-            "chart_ndvi": chart_ndvi
+            "state_yield_curve": state_curve,
+            "region_yield_curve": region_curve
         }
 
     except Exception as e:
