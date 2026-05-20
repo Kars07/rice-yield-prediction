@@ -9,6 +9,60 @@ The system fuses multi-sensor satellite imagery (Sentinel-1 SAR, Sentinel-2 Opti
 
 ---
 
+## Environment Setup & Run Commands
+
+### 1) Install Python and create a virtual environment (`.venv`)
+
+Install Python from the official website: https://www.python.org/downloads/
+
+**Linux/macOS**
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+**Windows (PowerShell)**
+```powershell
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+```
+
+### 2) Install backend requirements
+
+```bash
+pip install -r requirements.txt
+```
+
+### 3) Run the backend API
+
+```bash
+python api.py
+```
+
+### 4) Run the ensemble script
+
+```bash
+python model_development/ensemble_v2.py
+```
+
+### 5) Install Node.js/npm and frontend dependencies
+
+Install Node.js (npm is included): https://nodejs.org/
+
+From the repository root:
+```bash
+npm install
+```
+
+Then:
+```bash
+cd rice-navigator
+npm install
+npm run dev
+```
+
+---
+
 ## Repository File Manifest
 
 ### 1. `national_processed_v2.csv` (The Core Dataset)
