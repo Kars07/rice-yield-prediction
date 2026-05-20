@@ -180,7 +180,7 @@ def generate_3d_shap_containment_jars():
     cbar.set_ticklabels(['Low Variable Intensity', 'High Variable Intensity'], fontsize=9, fontweight='bold')
 
     # Main Document Figure Title Header
-    fig.text(0.5, 0.96, "Figure 4.21: 3D Isometric Containment Jars SHAP Summary and Interpretability Matrix", 
+    fig.text(0.5, 0.96, "3D Isometric Containment Jars SHAP Summary and Interpretability Matrix", 
              ha='center', fontsize=16, fontweight='bold', color='black')
 
     # 7. CAMERA POSITION AND CANVAS FRAME ADJUSTMENTS

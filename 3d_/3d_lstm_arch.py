@@ -79,7 +79,7 @@ def generate_3d_glass_pane_architecture():
     # 4. 2D OVERLAYS AND ANNOTATIONS
     # ==========================================
     # Titles
-    fig.text(0.5, 0.92, "Figure 4.13: LSTM Holographic Network Architecture", 
+    fig.text(0.5, 0.92, "LSTM Holographic Network Architecture", 
              ha='center', fontsize=18, fontweight='bold', color='black')
     fig.text(0.5, 0.89, "Visualizing Tensor Dimensionality Reduction from Input to Prediction", 
              ha='center', fontsize=12, color='#333333')
@@ -111,7 +111,7 @@ def generate_3d_glass_pane_architecture():
     ax.set_ylim([-8, 8])
     ax.set_zlim([-8, 8])
     
-    plt.savefig('Figure_4_13_Glass_Pane_Architecture.png', bbox_inches='tight')
+    plt.savefig('Glass_Pane_Architecture.png', bbox_inches='tight')
     print("-> Successfully saved 'Figure_4_13_Glass_Pane_Architecture.png'")
 
 if __name__ == "__main__":

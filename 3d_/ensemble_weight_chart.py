@@ -32,7 +32,7 @@ def generate_ensemble_weight_chart():
     ax.set_yticks(y_pos)
     ax.set_yticklabels(labels, fontsize=11, fontweight='bold', color='black')
     ax.set_xlabel('Meta-Weight Contribution Probability (%)', fontsize=11, fontweight='bold', labelpad=10)
-    ax.set_title('Figure 4.18: Empirical Weight Distribution of the Hybrid Ensemble Architecture', 
+    ax.set_title('Empirical Weight Distribution of the Hybrid Ensemble Architecture', 
                  fontsize=12, fontweight='bold', pad=18)
     
     # 6. Enforce hard grid boundaries up to 100%

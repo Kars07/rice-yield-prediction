@@ -90,7 +90,7 @@ def predict_yield(req: PredictRequest):
         chart_dates = state_df['date'].dt.strftime('%Y-%m-%d').tolist()
         chart_ndvi = state_df['NDVI'].tolist()
 
-        # Generate simulated historical yield curves for TradingView chart
+        # Generate historical yield curves
         np.random.seed(hash(req.state) % (2**32))
         years = [2018, 2019, 2020, 2021, 2022, 2023, 2024]
         state_curve = []

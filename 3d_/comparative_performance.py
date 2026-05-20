@@ -56,7 +56,7 @@ def generate_3d_performance_matrix():
     
     ax.set_zlim(0, 1.0)
     ax.set_zlabel('Evaluation Metric Scale Value', fontsize=11, fontweight='bold', labelpad=12)
-    ax.set_title('Figure 4.19: Multi-Model Evaluation and Performance Matrix Comparison', 
+    ax.set_title('Multi-Model Evaluation and Performance Matrix Comparison', 
                  fontsize=14, fontweight='bold', pad=25)
     
     # Adjust camera viewing vector for clean geometric profile
@@ -79,8 +79,8 @@ def generate_3d_performance_matrix():
     fig.text(0.1, 0.04, justification_text, ha='left', va='top', fontsize=10, style='italic', color='#1e293b', linespacing=1.4)
 
     plt.tight_layout()
-    plt.savefig('Figure_4_19_3D_Model_Comparison.png', bbox_inches='tight')
-    print("-> Successfully saved 'Figure_4_19_3D_Model_Comparison.png'")
+    plt.savefig('comparative_performance.png', bbox_inches='tight')
+    print("-> Successfully saved 'comparative_performance.png'")
 
 if __name__ == "__main__":
     generate_3d_performance_matrix()

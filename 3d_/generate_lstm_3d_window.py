@@ -77,7 +77,7 @@ def generate_3d_lstm_sliding_window_perfect():
     # ==========================================
     # 3. 2D OVERLAYS
     # ==========================================
-    fig.text(0.5, 0.92, "Figure 4.12: LSTM Spatial-Temporal Sequence Generation", 
+    fig.text(0.5, 0.92, "LSTM Spatial-Temporal Sequence Generation", 
              ha='center', fontsize=18, fontweight='bold', color='black')
     fig.text(0.5, 0.89, "Demonstrating the 10-Step Sliding Window Protocol over a Single Growing Season", 
              ha='center', fontsize=12, color='#333333')

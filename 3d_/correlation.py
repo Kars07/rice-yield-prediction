@@ -124,7 +124,7 @@ def generate_data_split_diagram():
             ha='center', va='center', fontsize=10, fontweight='bold', color="#991b1b")
     
     # Title
-    ax.set_title("Figure 4.10: Time-Series Aware Data Splitting Strategy", fontsize=14, fontweight='bold', y=1.05)
+    ax.set_title("Time-Series Aware Data Splitting Strategy", fontsize=14, fontweight='bold', y=1.05)
     
     plt.xlim(0, 1)
     plt.ylim(0, 1)

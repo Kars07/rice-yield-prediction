@@ -89,7 +89,7 @@ def generate_pdp_response_curves():
     # =========================================================================
     # GLOBAL FORMATTING & METHODOLOGY FOOTER
     # =========================================================================
-    plt.suptitle("Figure 4.23: Partial Dependence (PDP) and Individual Conditional Expectation (ICE) Curves", 
+    plt.suptitle("Partial Dependence (PDP) and Individual Conditional Expectation (ICE) Curves", 
                  fontsize=15, fontweight='bold', y=1.02)
     
     # Add flat analytical summary block pinned cleanly at the bottom margin
