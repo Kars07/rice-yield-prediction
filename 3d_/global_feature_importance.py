@@ -34,7 +34,7 @@ def generate_xgboost_feature_importance():
     ax.set_yticks(y_pos)
     ax.set_yticklabels(features[::-1], fontsize=11, fontweight='bold', color='black')
     ax.set_xlabel('Relative Relative Importance Score (Gain Weight)', fontsize=11, fontweight='bold', labelpad=10)
-    ax.set_title('Figure 4.20: XGBoost Global Feature Importance Vector (F-Score)', 
+    ax.set_title('XGBoost Global Feature Importance Vector (F-Score)', 
                  fontsize=12, fontweight='bold', pad=18)
     
     # 6. Set clean limits and background grid lines

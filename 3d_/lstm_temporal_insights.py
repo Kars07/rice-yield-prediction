@@ -72,7 +72,7 @@ def generate_lstm_temporal_insights():
     ax.set_xlabel("Sequential LSTM Sliding Lookback Window (Days across the Time-Series Stride)", 
                   fontsize=12, fontweight='bold', labelpad=12)
     ax.set_ylabel("Agronomic Input Variables", fontsize=12, fontweight='bold', labelpad=12)
-    ax.set_title("Figure 4.24: LSTM Temporal Attention and Feature-Step Importance Matrix", 
+    ax.set_title("LSTM Temporal Attention and Feature-Step Importance Matrix", 
                  fontsize=14, fontweight='bold', pad=22)
 
     # 6. Build and Position an Elegant Side Color Bar

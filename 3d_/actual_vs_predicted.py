@@ -44,7 +44,7 @@ def generate_actual_vs_predicted_plot():
     ax.set_ylim(lims)
     ax.set_xlabel('Actual Rice Yield (t/ha)', fontsize=12, fontweight='bold', labelpad=10)
     ax.set_ylabel('Predicted Rice Yield (t/ha)', fontsize=12, fontweight='bold', labelpad=10)
-    ax.set_title('Figure 4.15: Actual vs. Predicted Rice Yield Validation Matrix', fontsize=13, fontweight='bold', pad=15)
+    ax.set_title('Actual vs. Predicted Rice Yield Validation Matrix', fontsize=13, fontweight='bold', pad=15)
 
     # 10. Inset Statistics Box (Tucked safely into the empty top-left quadrant)
     stats_text = (
@@ -66,8 +66,8 @@ def generate_actual_vs_predicted_plot():
     ax.legend(loc='lower right', frameon=True, edgecolor='black', fontsize=10)
 
     plt.tight_layout()
-    plt.savefig('Figure_4_15_Actual_vs_Predicted.png', bbox_inches='tight')
-    print("-> Successfully saved 'Figure_4_15_Actual_vs_Predicted.png'")
+    plt.savefig('actual_vs_predicted.png', bbox_inches='tight')
+    print("-> Successfully saved 'actual_vs_predicted.png'")
 
 if __name__ == "__main__":
     generate_actual_vs_predicted_plot()

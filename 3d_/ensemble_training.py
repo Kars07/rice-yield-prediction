@@ -83,7 +83,7 @@ def generate_3d_block_ensemble_workflow():
     # ==========================================
     # 5. FORMAL TEXT INFORMATION OVERLAYS
     # ==========================================
-    fig.text(0.5, 0.93, "Figure 4.14: Hybrid Ensemble Training and Fusion Workflow", 
+    fig.text(0.5, 0.93, "Hybrid Ensemble Training and Fusion Workflow", 
              ha='center', fontsize=18, fontweight='bold', color='black')
     fig.text(0.5, 0.90, "Parallel Non-Linear Gradient Boosting and Deep Temporal Aggregation Pipeline", 
              ha='center', fontsize=12, color='#333333')

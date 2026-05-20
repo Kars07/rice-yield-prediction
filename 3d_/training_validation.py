@@ -46,7 +46,7 @@ def generate_lstm_loss_curves():
     # 6. Labeling & Typography
     ax.set_xlabel('Training Epochs', fontsize=12, fontweight='bold', labelpad=10)
     ax.set_ylabel('Loss Value (Mean Squared Error)', fontsize=12, fontweight='bold', labelpad=10)
-    ax.set_title('Figure 4.16: Stacked LSTM Training vs. Validation Loss Convergence', 
+    ax.set_title('Stacked LSTM Training vs. Validation Loss Convergence', 
                  fontsize=13, fontweight='bold', pad=15)
 
     # 7. Set structural axis limits and formatting

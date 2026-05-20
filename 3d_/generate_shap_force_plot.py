@@ -79,7 +79,7 @@ def generate_shap_force_plot():
     # ==========================================
     # 5. DOCUMENT MASTER TITLES & METRIC OVERLAYS
     # ==========================================
-    ax.text(2.65, 9.5, "Figure 4.22: SHAP Force Plot Instance for an Individual Growing Season", ha='center', va='top', fontsize=14, fontweight='bold', color='black')
+    ax.text(2.65, 9.5, "SHAP Force Plot Instance for an Individual Growing Season", ha='center', va='top', fontsize=14, fontweight='bold', color='black')
     ax.text(3.29, 9.0, "Visualizing Feature-Level Additive Contributions Shifting the Baselined National Prediction Matrix", ha='center', va='top', fontsize=11, style='italic', color='#475569')
 
     # Structural Monospace Context Panel Block positioned safely on the far left margin

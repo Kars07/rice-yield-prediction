@@ -122,7 +122,7 @@ def generate_xgboost_pipeline():
     # ==========================================
     # TITLE
     # ==========================================
-    ax.set_title("Figure 4.11: XGBoost Training and Optimization Pipeline", fontsize=15, fontweight='bold', y=0.96)
+    ax.set_title("XGBoost Training and Optimization Pipeline", fontsize=15, fontweight='bold', y=0.96)
     
     plt.xlim(0, 1)
     plt.ylim(0, 1)

@@ -61,7 +61,7 @@ def generate_residual_diagnostic_plots():
     # ==========================================
     # GLOBAL FORMATTING & ANNOTATIONS
     # ==========================================
-    plt.suptitle('Figure 4.17: Hybrid Ensemble Residual Diagnostics & Error Independence Matrix', 
+    plt.suptitle('Hybrid Ensemble Residual Diagnostics & Error Independence Matrix', 
                  fontsize=14, fontweight='bold', y=1.02)
     
     # Professional architectural justification block tucked into the right corner of plot A

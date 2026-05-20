@@ -90,7 +90,7 @@ def generate_flawless_academic_split():
     ax.text(0.5, 0.08, warning_text, ha='center', va='center', fontsize=10, fontweight='bold', color="black", linespacing=1.5)
 
     # --- TITLE ---
-    ax.set_title("Figure 4.10: Time-Series Aware Data Splitting Strategy", fontsize=14, fontweight='bold', y=0.98)
+    ax.set_title("Time-Series Aware Data Splitting Strategy", fontsize=14, fontweight='bold', y=0.98)
     
     plt.xlim(0, 1)
     plt.ylim(0, 1)
