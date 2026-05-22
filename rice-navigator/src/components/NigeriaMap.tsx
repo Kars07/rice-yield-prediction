@@ -14,6 +14,7 @@ import { WaterStressChoropleth } from "@/components/layers/WaterStressChoropleth
 import { HealthyFieldsChoropleth } from "@/components/layers/HealthyFieldsChoropleth";
 import { PhenologyGrowthChoropleth } from "@/components/layers/PhenologyGrowthChoropleth";
 import { DroughtRiskChoropleth } from "@/components/layers/DroughtRiskChoropleth";
+import { IrrigationZonesChoropleth } from "@/components/layers/IrrigationZonesChoropleth";
 import { statePassesFilter, type FeatureKey, type StateMetrics } from "@/data/csvProcessor";
 
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -453,7 +454,7 @@ const NigeriaMap = ({
       <MapLegend activeFeature={activeFeature} />
 
       {/* ── State Polygons ── */}
-      {filteredGeoData && !["heat_signatures", "rainfall_events", "water_stress", "healthy_fields", "phenology", "risk_heatmap"].includes(activeFeature) && (
+      {filteredGeoData && !["heat_signatures", "rainfall_events", "water_stress", "healthy_fields", "phenology", "risk_heatmap", "irrigation_junctions"].includes(activeFeature) && (
         <GeoJSON
           key={`states-${activeLayer}-${activeFeature}-${mapView}`}
           data={filteredGeoData}
@@ -480,6 +481,9 @@ const NigeriaMap = ({
       )}
       {filteredGeoData && activeFeature === "risk_heatmap" && (
         <DroughtRiskChoropleth geoData={filteredGeoData as any} metrics={csvMetrics} />
+      )}
+      {filteredGeoData && activeFeature === "irrigation_junctions" && (
+        <IrrigationZonesChoropleth geoData={filteredGeoData as any} metrics={csvMetrics} />
       )}
 
       {/* ── Advanced Raster Overlays ── */}
