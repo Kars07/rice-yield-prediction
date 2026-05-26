@@ -131,26 +131,77 @@ export const IrrigationZonesChoropleth = ({ geoData, metrics }: Props) => {
           0%   { background-position: 0px 0px, 0px 0px; }
           100% { background-position: -400px 400px, 800px 400px; }
         }
-        @keyframes waterFlowDash {
-          to { stroke-dashoffset: -22; }
+        @keyframes waterFlowFast {
+          to { stroke-dashoffset: -30; }
+        }
+        @keyframes waterFlowMedium {
+          to { stroke-dashoffset: -25; }
+        }
+        @keyframes waterFlowSlow {
+          to { stroke-dashoffset: -20; }
         }
         @keyframes confluencePulse {
-          0%, 100% { transform: scale(1.0); opacity: 0.8; }
-          50%      { transform: scale(1.12); opacity: 0.95; filter: drop-shadow(0 0 10px rgba(6,182,212,0.8)); }
+          0%, 100% { transform: scale(1.0); opacity: 0.85; filter: drop-shadow(0 0 6px rgba(6,182,212,0.6)); }
+          50%      { transform: scale(1.12); opacity: 0.98; filter: drop-shadow(0 0 16px rgba(6,182,212,0.95)); }
         }
-        .confluence-flow-line {
-          animation: waterFlowDash 1s linear infinite;
+        @keyframes radarSpinClockwise {
+          to { stroke-dashoffset: -60; }
+        }
+        @keyframes radarSpinCounterClockwise {
+          to { stroke-dashoffset: 60; }
+        }
+        .confluence-flow-line-fast {
+          animation: waterFlowFast 0.8s linear infinite;
           stroke-linecap: round;
-          filter: drop-shadow(0 0 4px rgba(34,211,238,0.7));
+          filter: drop-shadow(0 0 5px rgba(34,211,238,0.85));
+        }
+        .confluence-flow-line-medium {
+          animation: waterFlowMedium 1.5s linear infinite;
+          stroke-linecap: round;
+          filter: drop-shadow(0 0 3px rgba(59,130,246,0.6));
+        }
+        .confluence-flow-line-slow {
+          animation: waterFlowSlow 2.2s linear infinite;
+          stroke-linecap: round;
+          filter: drop-shadow(0 0 3px rgba(16,185,129,0.6));
         }
         .confluence-glow-base {
           stroke-linecap: round;
-          filter: blur(2px) opacity(0.8);
+          filter: blur(2.5px) opacity(0.85);
         }
         .confluence-pulsing-core {
           transform-origin: center;
           animation: confluencePulse 2.5s ease-in-out infinite;
           filter: url(#confluenceWaterFilter);
+        }
+        .confluence-radar-outer {
+          stroke-dasharray: 10,25;
+          animation: radarSpinClockwise 12s linear infinite;
+        }
+        .confluence-radar-inner {
+          stroke-dasharray: 6,15;
+          animation: radarSpinCounterClockwise 8s linear infinite;
+        }
+        .leaflet-tooltip.scientific-tooltip {
+          background-color: #0b0f19 !important;
+          border: 1.5px solid rgba(6, 182, 212, 0.7) !important;
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), 0 0 10px rgba(6, 182, 212, 0.3) !important;
+          color: #ffffff !important;
+          border-radius: 10px !important;
+          padding: 8px 12px !important;
+          font-family: inherit !important;
+        }
+        .leaflet-tooltip-top.scientific-tooltip::before {
+          border-top-color: #0b0f19 !important;
+        }
+        .leaflet-tooltip-bottom.scientific-tooltip::before {
+          border-bottom-color: #0b0f19 !important;
+        }
+        .leaflet-tooltip-left.scientific-tooltip::before {
+          border-left-color: #0b0f19 !important;
+        }
+        .leaflet-tooltip-right.scientific-tooltip::before {
+          border-right-color: #0b0f19 !important;
         }
       `;
       document.head.appendChild(el);
@@ -525,33 +576,92 @@ const ConfluenceOverlays = () => {
       {confluences.map((c, idx) => (
         <div key={idx}>
           {/* Dual layers of Polylines for glowing water road effect */}
-          {c.rivers.map((r, rIdx) => (
-            <div key={`river-${rIdx}`}>
-              {/* Thick cyan glowing base */}
-              <Polyline
-                positions={r}
-                pane="confluencePane"
-                pathOptions={{
-                  color: "#06b6d4",
-                  weight: 8,
-                  opacity: 0.35,
-                  className: "confluence-glow-base",
-                }}
-              />
-              {/* Thin, vibrant animated core */}
-              <Polyline
-                positions={r}
-                pane="confluencePane"
-                pathOptions={{
-                  color: "#22d3ee",
-                  weight: 3,
-                  opacity: 0.9,
-                  dashArray: "10,12",
-                  className: "confluence-flow-line",
-                }}
-              />
-            </div>
-          ))}
+          {c.rivers.map((r, rIdx) => {
+            // Generate braided channel offsets
+            const secondaryChannel = r.map(([lat, lng]) => [lat + 0.005, lng - 0.005] as [number, number]);
+            const tertiaryChannel = r.map(([lat, lng]) => [lat - 0.005, lng + 0.005] as [number, number]);
+
+            return (
+              <div key={`river-${rIdx}`}>
+                {/* Thick cyan glowing base */}
+                <Polyline
+                  positions={r}
+                  pane="confluencePane"
+                  pathOptions={{
+                    color: "#06b6d4",
+                    weight: 10,
+                    opacity: 0.25,
+                    className: "confluence-glow-base",
+                  }}
+                />
+
+                {/* Primary Deep Flow Channel (Cyan - Fast) */}
+                <Polyline
+                  positions={r}
+                  pane="confluencePane"
+                  pathOptions={{
+                    color: "#22d3ee",
+                    weight: 3.5,
+                    opacity: 0.95,
+                    dashArray: "12,12",
+                    className: "confluence-flow-line-fast",
+                  }}
+                />
+
+                {/* Secondary Braided Channel (Emerald - Slow) */}
+                <Polyline
+                  positions={secondaryChannel}
+                  pane="confluencePane"
+                  pathOptions={{
+                    color: "#10b981",
+                    weight: 1.5,
+                    opacity: 0.8,
+                    dashArray: "6,10",
+                    className: "confluence-flow-line-slow",
+                  }}
+                />
+
+                {/* Tertiary Overflow Channel (Royal Blue - Medium) */}
+                <Polyline
+                  positions={tertiaryChannel}
+                  pane="confluencePane"
+                  pathOptions={{
+                    color: "#3b82f6",
+                    weight: 1.5,
+                    opacity: 0.7,
+                    dashArray: "8,14",
+                    className: "confluence-flow-line-medium",
+                  }}
+                />
+              </div>
+            );
+          })}
+
+          {/* Outward scientific radar moisture rings */}
+          <Circle
+            center={c.center}
+            radius={4500}
+            pane="confluencePane"
+            pathOptions={{
+              fillColor: "transparent",
+              color: "#22d3ee",
+              weight: 1.2,
+              opacity: 0.38,
+              className: "confluence-radar-outer"
+            }}
+          />
+          <Circle
+            center={c.center}
+            radius={3000}
+            pane="confluencePane"
+            pathOptions={{
+              fillColor: "transparent",
+              color: "#10b981",
+              weight: 0.9,
+              opacity: 0.32,
+              className: "confluence-radar-inner"
+            }}
+          />
 
           {/* Radial outer glow zone circle */}
           <Circle
@@ -560,7 +670,7 @@ const ConfluenceOverlays = () => {
             pane="confluencePane"
             pathOptions={{
               fillColor: "#0891b2",
-              fillOpacity: 0.18,
+              fillOpacity: 0.16,
               color: "transparent",
               weight: 0,
             }}
@@ -573,18 +683,18 @@ const ConfluenceOverlays = () => {
             pane="confluencePane"
             pathOptions={{
               fillColor: "#22d3ee",
-              fillOpacity: 0.85,
+              fillOpacity: 0.88,
               color: "#ffffff",
               weight: 1.5,
               dashArray: "3,3",
               className: "confluence-pulsing-core",
             }}
           >
-            <Tooltip permanent direction="top" offset={[0, -6]} className="!bg-[#0f172a]/95 !border !border-cyan-500/40 !shadow-2xl !text-white !font-bold !text-[9px] !rounded-lg !px-2.5 !py-1.5">
+            <Tooltip permanent direction="top" offset={[0, -6]} className="scientific-tooltip">
               <div className="flex flex-col gap-0.5">
-                <span className="text-cyan-400 font-extrabold flex items-center gap-1">🌊 {c.name}</span>
-                <span className="text-white/70 block text-[8px] font-semibold">{c.lga} • {c.state} State</span>
-                <span className="text-[7.5px] text-cyan-200/50 uppercase tracking-widest mt-0.5 font-bold">Scientific Confluence Zone</span>
+                <span className="text-cyan-400 font-extrabold flex items-center gap-1 text-[10px]">🌊 {c.name}</span>
+                <span className="text-slate-300 block text-[8.5px] font-semibold">{c.lga} • {c.state} State</span>
+                <span className="text-[7.5px] text-cyan-300/80 uppercase tracking-widest mt-0.5 font-extrabold">Scientific Confluence Zone</span>
               </div>
             </Tooltip>
           </Circle>
@@ -633,16 +743,28 @@ const IrrigationLegend = () => (
     </div>
 
     {/* Confluences explanation */}
-    <div className="border-t border-white/10 pt-2 flex items-center justify-between text-[9px] text-white/60">
-      <div className="flex items-center gap-1.5">
-        <div className="w-2.5 h-2.5 rounded-full bg-cyan-500 border border-white/50" />
-        <span className="font-semibold text-white/80">Major River Confluence</span>
+    <div className="border-t border-white/10 pt-2 flex flex-col gap-1.5 text-[9px] text-white/60">
+      <div className="flex justify-between items-center">
+        <div className="flex items-center gap-1.5">
+          <div className="w-2.5 h-2.5 rounded-full bg-cyan-500 border border-white/50" />
+          <span className="font-semibold text-white/80">🌊 Major Confluence Junction</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <div className="w-4 h-4 rounded-full border border-cyan-400 border-dashed animate-pulse" />
+          <span>Bi-directional Sonar Radar Scanner Rings</span>
+        </div>
       </div>
-      <div className="flex items-center gap-1.5">
-        <div className="w-6 h-1 bg-cyan-400 rounded" style={{ borderTop: "2px dashed #22d3ee" }} />
-        <span>Animated Flowing Channels (Water Roads)</span>
+      <div className="flex justify-between items-center">
+        <div className="flex items-center gap-1.5">
+          <div className="w-8 h-1.5 rounded flex gap-0.5 overflow-hidden">
+            <div className="w-1/3 bg-cyan-400" />
+            <div className="w-1/3 bg-emerald-400" />
+            <div className="w-1/3 bg-blue-400" />
+          </div>
+          <span>Multi-Velocity Braided Flow Water Roads (Fast, Medium, Slow)</span>
+        </div>
+        <span className="text-[8px] text-cyan-400/80">Supply Confluences attached to nearest LGA</span>
       </div>
-      <span className="text-[8px] text-cyan-400/80">Supply Confluences attached to nearest LGA</span>
     </div>
   </div>
 );

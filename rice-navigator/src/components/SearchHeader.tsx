@@ -84,9 +84,9 @@ const SearchHeader = ({ riceFields, onSearch, onSelectField }: Props) => {
         {/* Branding / Search toggle */}
         {!isSearchMode ? (
           <>
-            <div className="flex items-center gap-2 shrink-0">
-              <Leaf className="w-4 h-4 text-primary shrink-0" />
-              <span className="text-sm font-semibold text-foreground tracking-tight">Rice Monitor Map</span>
+            <div className="flex items-center gap-1.5 shrink-0">
+              <Leaf className="w-3.5 h-3.5 text-primary/70 shrink-0" />
+              <span className="text-xs font-medium text-muted-foreground tracking-tight">Rice Monitor Map</span>
             </div>
             <button
               onClick={() => setIsSearchMode(true)}
