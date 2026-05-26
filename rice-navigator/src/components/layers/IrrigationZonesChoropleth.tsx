@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useState, useMemo } from "react";
-import { GeoJSON, useMap, Circle } from "react-leaflet";
+import { GeoJSON, useMap, Circle, Polyline, Tooltip } from "react-leaflet";
 import L from "leaflet";
 import { type StateMetrics } from "@/data/csvProcessor";
 
@@ -107,6 +107,19 @@ export const IrrigationZonesChoropleth = ({ geoData, metrics }: Props) => {
   // Pane setup + organic pulsating animation
   useEffect(() => {
     if (!document.getElementById('irrigation-cinematic-style')) {
+      const svg = document.createElement('div');
+      svg.innerHTML = `
+        <svg id="confluence-flow-svg" width="0" height="0" style="position:absolute;z-index:-1;pointer-events:none;">
+          <filter id="confluenceWaterFilter">
+            <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="4" result="noise">
+              <animate attributeName="baseFrequency" values="0.02;0.028;0.02" dur="6s" repeatCount="indefinite" />
+            </feTurbulence>
+            <feDisplacementMap in="SourceGraphic" in2="noise" scale="8" xChannelSelector="R" yChannelSelector="B" />
+          </filter>
+        </svg>
+      `;
+      document.body.appendChild(svg);
+
       const el = document.createElement('style');
       el.id = 'irrigation-cinematic-style';
       el.textContent = `
@@ -117,6 +130,27 @@ export const IrrigationZonesChoropleth = ({ geoData, metrics }: Props) => {
         @keyframes irrigationFlowMovement {
           0%   { background-position: 0px 0px, 0px 0px; }
           100% { background-position: -400px 400px, 800px 400px; }
+        }
+        @keyframes waterFlowDash {
+          to { stroke-dashoffset: -22; }
+        }
+        @keyframes confluencePulse {
+          0%, 100% { transform: scale(1.0); opacity: 0.8; }
+          50%      { transform: scale(1.12); opacity: 0.95; filter: drop-shadow(0 0 10px rgba(6,182,212,0.8)); }
+        }
+        .confluence-flow-line {
+          animation: waterFlowDash 1s linear infinite;
+          stroke-linecap: round;
+          filter: drop-shadow(0 0 4px rgba(34,211,238,0.7));
+        }
+        .confluence-glow-base {
+          stroke-linecap: round;
+          filter: blur(2px) opacity(0.8);
+        }
+        .confluence-pulsing-core {
+          transform-origin: center;
+          animation: confluencePulse 2.5s ease-in-out infinite;
+          filter: url(#confluenceWaterFilter);
         }
       `;
       document.head.appendChild(el);
@@ -145,6 +179,11 @@ export const IrrigationZonesChoropleth = ({ geoData, metrics }: Props) => {
     (pane.style as any).mixBlendMode = 'multiply';
     pane.style.animation = 'irrigationBreath 7s ease-in-out infinite';
     pane.style.willChange = 'filter';
+
+    if (!map.getPane('confluencePane')) map.createPane('confluencePane');
+    const confluencePane = map.getPane('confluencePane')!;
+    confluencePane.style.zIndex = '360';
+    confluencePane.style.pointerEvents = 'auto';
   }, [map]);
 
   useEffect(() => {
@@ -323,7 +362,234 @@ export const IrrigationZonesChoropleth = ({ geoData, metrics }: Props) => {
         animation: 'irrigationFlowMovement 35s linear infinite',
       }} />
 
+      <ConfluenceOverlays />
       <IrrigationLegend />
+    </>
+  );
+};
+
+const ConfluenceOverlays = () => {
+  const confluences = [
+    // --- KANO STATE ---
+    {
+      name: "Tamburawa Confluence",
+      lga: "Dawakin Kudu LGA",
+      state: "Kano",
+      center: [11.87, 8.53] as [number, number],
+      rivers: [
+        [[12.02, 8.48], [11.87, 8.53]] as [number, number][],
+        [[11.92, 8.35], [11.87, 8.53]] as [number, number][],
+        [[11.87, 8.53], [11.78, 8.72]] as [number, number][],
+      ],
+    },
+    {
+      name: "Watari-Kano River Junction",
+      lga: "Bagwai LGA",
+      state: "Kano",
+      center: [12.15, 8.24] as [number, number],
+      rivers: [
+        [[12.28, 8.15], [12.15, 8.24]] as [number, number][],
+        [[12.18, 8.38], [12.15, 8.24], [12.05, 8.31]] as [number, number][],
+      ],
+    },
+    // --- KEBBI STATE ---
+    {
+      name: "Niger-Sokoto Confluence",
+      lga: "Bagudo LGA",
+      state: "Kebbi",
+      center: [11.41, 4.15] as [number, number],
+      rivers: [
+        [[11.62, 4.02], [11.41, 4.15], [11.18, 4.22]] as [number, number][],
+        [[11.68, 4.35], [11.41, 4.15]] as [number, number][],
+      ],
+    },
+    {
+      name: "Sokoto-Rima Confluence",
+      lga: "Argungu LGA",
+      state: "Kebbi",
+      center: [12.45, 4.25] as [number, number],
+      rivers: [
+        [[12.65, 4.12], [12.45, 4.25]] as [number, number][],
+        [[12.35, 4.45], [12.45, 4.25], [12.22, 4.18]] as [number, number][],
+      ],
+    },
+    {
+      name: "Ka-Sokoto Confluence",
+      lga: "Bunza LGA",
+      state: "Kebbi",
+      center: [11.75, 3.98] as [number, number],
+      rivers: [
+        [[11.90, 4.12], [11.75, 3.98]] as [number, number][],
+        [[11.72, 3.82], [11.75, 3.98], [11.60, 3.92]] as [number, number][],
+      ],
+    },
+    // --- NIGER STATE ---
+    {
+      name: "Mureji Confluence",
+      lga: "Mokwa LGA",
+      state: "Niger",
+      center: [8.75, 5.9] as [number, number],
+      rivers: [
+        [[9.02, 5.02], [8.75, 5.9], [8.48, 6.22]] as [number, number][],
+        [[9.22, 6.02], [8.75, 5.9]] as [number, number][],
+      ],
+    },
+    {
+      name: "Gurara-Niger Confluence",
+      lga: "Lapai LGA",
+      state: "Niger",
+      center: [8.18, 6.67] as [number, number],
+      rivers: [
+        [[8.42, 6.82], [8.18, 6.67]] as [number, number][],
+        [[8.22, 6.45], [8.18, 6.67], [8.05, 6.78]] as [number, number][],
+      ],
+    },
+    {
+      name: "Gbako-Niger Confluence",
+      lga: "Katcha LGA",
+      state: "Niger",
+      center: [8.65, 6.05] as [number, number],
+      rivers: [
+        [[8.88, 6.12], [8.65, 6.05]] as [number, number][],
+        [[8.68, 5.88], [8.65, 6.05], [8.52, 6.18]] as [number, number][],
+      ],
+    },
+    // --- JIGAWA STATE ---
+    {
+      name: "Hadejia-Jama'are Wetlands",
+      lga: "Hadejia LGA",
+      state: "Jigawa",
+      center: [12.65, 10.45] as [number, number],
+      rivers: [
+        [[12.52, 10.12], [12.65, 10.45]] as [number, number][],
+        [[12.42, 10.38], [12.65, 10.45]] as [number, number][],
+        [[12.65, 10.45], [12.78, 10.82]] as [number, number][],
+      ],
+    },
+    {
+      name: "Iggi-Hadejia Junction",
+      lga: "Auyo LGA",
+      state: "Jigawa",
+      center: [12.52, 9.95] as [number, number],
+      rivers: [
+        [[12.62, 9.82], [12.52, 9.95]] as [number, number][],
+        [[12.42, 9.92], [12.52, 9.95], [12.48, 10.15]] as [number, number][],
+      ],
+    },
+    // --- EBONYI STATE ---
+    {
+      name: "Cross River-Abonyi Confluence",
+      lga: "Afikpo LGA",
+      state: "Ebonyi",
+      center: [6.05, 8.12] as [number, number],
+      rivers: [
+        [[6.28, 7.98], [6.05, 8.12]] as [number, number][],
+        [[6.18, 8.28], [6.05, 8.12], [5.78, 7.98]] as [number, number][],
+      ],
+    },
+    // --- TARABA STATE ---
+    {
+      name: "Taraba-Benue Confluence",
+      lga: "Gassol LGA",
+      state: "Taraba",
+      center: [8.64, 10.25] as [number, number],
+      rivers: [
+        [[8.92, 9.78], [8.64, 10.25], [8.38, 10.82]] as [number, number][],
+        [[8.18, 10.12], [8.64, 10.25]] as [number, number][],
+      ],
+    },
+    {
+      name: "Benue-Donga Confluence",
+      lga: "Wukari LGA",
+      state: "Taraba",
+      center: [7.95, 10.42] as [number, number],
+      rivers: [
+        [[8.15, 10.18], [7.95, 10.42], [7.78, 10.65]] as [number, number][],
+        [[7.82, 10.22], [7.95, 10.42]] as [number, number][],
+      ],
+    },
+    {
+      name: "Benue-Katsina Ala Confluence",
+      lga: "Katsina-Ala border LGA",
+      state: "Taraba",
+      center: [7.80, 9.45] as [number, number],
+      rivers: [
+        [[8.02, 9.28], [7.80, 9.45], [7.65, 9.68]] as [number, number][],
+        [[7.68, 9.32], [7.80, 9.45]] as [number, number][],
+      ],
+    },
+  ];
+
+  return (
+    <>
+      {confluences.map((c, idx) => (
+        <div key={idx}>
+          {/* Dual layers of Polylines for glowing water road effect */}
+          {c.rivers.map((r, rIdx) => (
+            <div key={`river-${rIdx}`}>
+              {/* Thick cyan glowing base */}
+              <Polyline
+                positions={r}
+                pane="confluencePane"
+                pathOptions={{
+                  color: "#06b6d4",
+                  weight: 8,
+                  opacity: 0.35,
+                  className: "confluence-glow-base",
+                }}
+              />
+              {/* Thin, vibrant animated core */}
+              <Polyline
+                positions={r}
+                pane="confluencePane"
+                pathOptions={{
+                  color: "#22d3ee",
+                  weight: 3,
+                  opacity: 0.9,
+                  dashArray: "10,12",
+                  className: "confluence-flow-line",
+                }}
+              />
+            </div>
+          ))}
+
+          {/* Radial outer glow zone circle */}
+          <Circle
+            center={c.center}
+            radius={3500}
+            pane="confluencePane"
+            pathOptions={{
+              fillColor: "#0891b2",
+              fillOpacity: 0.18,
+              color: "transparent",
+              weight: 0,
+            }}
+          />
+
+          {/* Glowing junction center with scientific wave displacement filter */}
+          <Circle
+            center={c.center}
+            radius={1800}
+            pane="confluencePane"
+            pathOptions={{
+              fillColor: "#22d3ee",
+              fillOpacity: 0.85,
+              color: "#ffffff",
+              weight: 1.5,
+              dashArray: "3,3",
+              className: "confluence-pulsing-core",
+            }}
+          >
+            <Tooltip permanent direction="top" offset={[0, -6]} className="!bg-[#0f172a]/95 !border !border-cyan-500/40 !shadow-2xl !text-white !font-bold !text-[9px] !rounded-lg !px-2.5 !py-1.5">
+              <div className="flex flex-col gap-0.5">
+                <span className="text-cyan-400 font-extrabold flex items-center gap-1">🌊 {c.name}</span>
+                <span className="text-white/70 block text-[8px] font-semibold">{c.lga} • {c.state} State</span>
+                <span className="text-[7.5px] text-cyan-200/50 uppercase tracking-widest mt-0.5 font-bold">Scientific Confluence Zone</span>
+              </div>
+            </Tooltip>
+          </Circle>
+        </div>
+      ))}
     </>
   );
 };
@@ -331,13 +597,13 @@ export const IrrigationZonesChoropleth = ({ geoData, metrics }: Props) => {
 const IrrigationLegend = () => (
   <div
     className="absolute z-[1000] bg-black/85 backdrop-blur-md text-white px-5 py-4 rounded-2xl shadow-2xl border border-white/15"
-    style={{ bottom: "90px", left: "50%", transform: "translateX(-50%)", minWidth: 460 }}
+    style={{ bottom: "90px", left: "50%", transform: "translateX(-50%)", minWidth: 540 }}
   >
     <div className="text-[10px] font-bold mb-2.5 text-center tracking-widest uppercase text-white/70">
-      Agro-Ecological Irrigation Zones
+      Agro-Ecological Irrigation Zones & Water Confluences
     </div>
     
-    <div className="flex gap-4">
+    <div className="flex gap-4 mb-3">
       {/* Arid Zones */}
       <div className="flex-1 flex flex-col gap-1">
         <div className="text-[9px] font-bold text-center text-orange-200">ARID ZONES</div>
@@ -364,6 +630,19 @@ const IrrigationLegend = () => (
           <span>Single Crop</span><span>Multi-crop</span>
         </div>
       </div>
+    </div>
+
+    {/* Confluences explanation */}
+    <div className="border-t border-white/10 pt-2 flex items-center justify-between text-[9px] text-white/60">
+      <div className="flex items-center gap-1.5">
+        <div className="w-2.5 h-2.5 rounded-full bg-cyan-500 border border-white/50" />
+        <span className="font-semibold text-white/80">Major River Confluence</span>
+      </div>
+      <div className="flex items-center gap-1.5">
+        <div className="w-6 h-1 bg-cyan-400 rounded" style={{ borderTop: "2px dashed #22d3ee" }} />
+        <span>Animated Flowing Channels (Water Roads)</span>
+      </div>
+      <span className="text-[8px] text-cyan-400/80">Supply Confluences attached to nearest LGA</span>
     </div>
   </div>
 );
