@@ -73,7 +73,7 @@ const SidebarMenu = ({ activeFeature, onChange }: Props) => {
                 return (
                   <button
                     key={item.key}
-                    onClick={() => onChange(item.key as FeatureKey)}
+                    onClick={() => onChange((isActive ? "all" : item.key) as FeatureKey)}
                     className={`flex items-center gap-2 px-3 py-2 rounded-full text-xs font-semibold border transition-all ${
                       isActive
                         ? "bg-blue-500 text-white border-blue-500 shadow-md"

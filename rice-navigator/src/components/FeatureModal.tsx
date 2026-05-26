@@ -90,7 +90,7 @@ const FeatureModal = ({ open, activeFeature, onSelect, onClose }: Props) => {
       "heat_signatures", "rainfall_events", "water_stress"
     ];
     const safeKey = validKeys.includes(key as FeatureKey) ? (key as FeatureKey) : "all";
-    onSelect(safeKey);
+    onSelect(activeFeature === safeKey ? "all" : safeKey);
     onClose();
   };
 

@@ -75,36 +75,36 @@ const SearchHeader = ({ riceFields, onSearch, onSelectField }: Props) => {
 
   return (
     <motion.div
-      className="fixed top-0 left-0 right-0 md:left-20 md:right-auto md:w-[40%] z-[1000] px-4 pt-4 pb-1 safe-area-top"
+      className="fixed top-0 left-0 right-0 md:left-20 md:right-auto md:w-auto z-[1000] px-4 pt-4 pb-1 safe-area-top"
       initial={{ y: -60 }}
       animate={{ y: 0 }}
       transition={{ type: "spring", damping: 20 }}
     >
-      <div className="bg-card rounded-full px-4 py-2.5 flex items-center gap-3 shadow-lg border border-border/40">
+      <div className="bg-card rounded-full px-3.5 py-2 flex items-center gap-2.5 shadow-lg border border-border/40 w-full md:w-fit">
         {/* Branding / Search toggle */}
         {!isSearchMode ? (
           <>
-            <div className="flex items-center gap-2 flex-1 min-w-0">
+            <div className="flex items-center gap-2 shrink-0">
               <Leaf className="w-4 h-4 text-primary shrink-0" />
-              <span className="text-sm font-semibold text-foreground tracking-tight truncate">Rice Monitor Map</span>
+              <span className="text-sm font-semibold text-foreground tracking-tight">Rice Monitor Map</span>
             </div>
             <button
               onClick={() => setIsSearchMode(true)}
-              className="w-8 h-8 rounded-full bg-muted flex items-center justify-center shrink-0 border border-border/40 hover:bg-muted/80 transition-colors"
+              className="w-7 h-7 rounded-full bg-muted flex items-center justify-center shrink-0 border border-border/40 hover:bg-muted/80 transition-colors"
             >
-              <Search className="w-4 h-4 text-muted-foreground" />
+              <Search className="w-3.5 h-3.5 text-muted-foreground" />
             </button>
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 toggleVoice();
               }}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-medium"
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold shrink-0"
             >
               {listening ? (
-                <MicOff className="w-3.5 h-3.5 animate-pulse text-destructive" />
+                <MicOff className="w-3 h-3 animate-pulse text-destructive" />
               ) : (
-                <Mic className="w-3.5 h-3.5" />
+                <Mic className="w-3 h-3" />
               )}
               <span>{listening ? "Listening..." : "Voice"}</span>
             </button>
@@ -115,7 +115,7 @@ const SearchHeader = ({ riceFields, onSearch, onSelectField }: Props) => {
             <input
               type="text"
               autoFocus
-              placeholder="Search states, LGAs, irrigation schemes…"
+              placeholder="Search..."
               value={query}
               onChange={(e) => {
                 setQuery(e.target.value);
@@ -124,7 +124,7 @@ const SearchHeader = ({ riceFields, onSearch, onSelectField }: Props) => {
               onBlur={() => {
                 if (!query) setTimeout(() => setIsSearchMode(false), 200);
               }}
-              className="flex-1 bg-transparent outline-none text-sm text-foreground placeholder:text-muted-foreground"
+              className="bg-transparent outline-none text-sm text-foreground placeholder:text-muted-foreground w-40 md:w-56"
             />
             <button onClick={toggleVoice} className="shrink-0">
               {listening ? (

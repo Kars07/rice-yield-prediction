@@ -44,24 +44,23 @@ export function YieldCurveChart({ stateName, height = "100%" }: Props) {
 
         chart = createChart(chartContainerRef.current, {
           layout: {
-            // Use a dark hex — lightweight-charts does NOT support 'transparent'
-            background: { type: ColorType.Solid, color: "#0f1117" },
-            textColor: "#9ca3af",
+            background: { type: ColorType.Solid, color: "#ffffff" },
+            textColor: "#334155",
             fontSize: 11,
           },
           grid: {
-            vertLines: { color: "rgba(255,255,255,0.04)" },
-            horzLines: { color: "rgba(255,255,255,0.06)" },
+            vertLines: { color: "rgba(0,0,0,0.05)" },
+            horzLines: { color: "rgba(0,0,0,0.05)" },
           },
           width: chartContainerRef.current.clientWidth,
           height: chartContainerRef.current.clientHeight || 400,
           rightPriceScale: {
-            borderColor: "rgba(255,255,255,0.08)",
-            textColor: "#6b7280",
+            borderColor: "rgba(0,0,0,0.08)",
+            textColor: "#475569",
             scaleMargins: { top: 0.15, bottom: 0.15 },
           },
           timeScale: {
-            borderColor: "rgba(255,255,255,0.08)",
+            borderColor: "rgba(0,0,0,0.08)",
             fixLeftEdge: true,
             fixRightEdge: true,
             timeVisible: true,
@@ -73,26 +72,26 @@ export function YieldCurveChart({ stateName, height = "100%" }: Props) {
           handleScale: true,
         });
 
-        // State Area Curve — emerald fill
+        // State Area Curve — deeper, highly vibrant emerald fill for perfect popping
         const stateArea = chart.addSeries(AreaSeries, {
-          lineColor: "#10b981",
-          topColor: "rgba(16,185,129,0.35)",
-          bottomColor: "rgba(16,185,129,0.02)",
-          lineWidth: 2,
-          crosshairMarkerRadius: 5,
-          crosshairMarkerBorderColor: "#ffffff",
+          lineColor: "#059669",
+          topColor: "rgba(5,150,105,0.22)",
+          bottomColor: "rgba(5,150,105,0.01)",
+          lineWidth: 3.5,
+          crosshairMarkerRadius: 6,
+          crosshairMarkerBorderColor: "#059669",
           priceLineVisible: true,
           lastValueVisible: true,
         });
         stateArea.setData(data.state_yield_curve);
 
-        // Regional Dashed Line — violet
+        // Regional Dashed Line — deeper violet for perfect contrast on white
         const regionLine = chart.addSeries(LineSeries, {
-          color: "#8b5cf6",
-          lineWidth: 2,
+          color: "#6d28d9",
+          lineWidth: 2.5,
           lineStyle: LineStyle.Dashed,
-          crosshairMarkerRadius: 4,
-          crosshairMarkerBorderColor: "#ffffff",
+          crosshairMarkerRadius: 5,
+          crosshairMarkerBorderColor: "#6d28d9",
           priceLineVisible: false,
           lastValueVisible: true,
         });
@@ -145,19 +144,19 @@ export function YieldCurveChart({ stateName, height = "100%" }: Props) {
       </div>
 
       {/* Chart area */}
-      <div className="rounded-xl overflow-hidden border border-white/8 relative grow min-h-0" style={{ background: "#0f1117", height }}>
+      <div className="rounded-xl overflow-hidden border border-slate-200 relative grow min-h-0" style={{ background: "#ffffff", height }}>
         {loading && (
-          <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 bg-[#0f1117] text-emerald-500/60">
-            <div className="w-5 h-5 border-2 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin" />
-            <span className="text-xs font-medium animate-pulse">Running LSTM + XGBoost ensemble...</span>
+          <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 bg-white text-emerald-600">
+            <div className="w-5 h-5 border-2 border-emerald-500/30 border-t-emerald-600 rounded-full animate-spin" />
+            <span className="text-xs font-semibold animate-pulse text-slate-700">Running LSTM + XGBoost ensemble...</span>
           </div>
         )}
         
         {error && (
-          <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 bg-[#0f1117] text-red-400 text-center px-6">
+          <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 bg-white text-red-500 text-center px-6">
             <span className="text-xl">⚠</span>
-            <p className="text-xs font-medium">{error}</p>
-            <p className="text-[10px] text-muted-foreground">The cloud model API might be spinning up or temporarily unreachable.</p>
+            <p className="text-xs font-semibold text-slate-800">{error}</p>
+            <p className="text-[10px] text-slate-500">The cloud model API might be spinning up or temporarily unreachable.</p>
           </div>
         )}
         

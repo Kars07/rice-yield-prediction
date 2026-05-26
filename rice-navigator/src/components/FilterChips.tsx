@@ -29,7 +29,7 @@ const FilterChips = ({ mapView, onChangeView, activeFeature, onChange }: Props) 
   return (
     <>
       <motion.div
-        className="fixed top-[75px] left-0 right-0 md:top-4 md:left-[37rem] md:right-4 md:pt-1.5 z-[999] px-4 md:px-0"
+        className="fixed top-[75px] left-0 right-0 md:top-4 md:left-[25rem] md:right-4 md:pt-1.5 z-[999] px-4 md:px-0"
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.15 }}
@@ -74,7 +74,7 @@ const FilterChips = ({ mapView, onChangeView, activeFeature, onChange }: Props) 
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: i * 0.05 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={() => onChange(chip.key)}
+                onClick={() => onChange(isActive ? "all" : chip.key)}
                 className={`shrink-0 px-4 py-2 rounded-full text-xs font-semibold border transition-all duration-200 flex items-center gap-2 ${
                   isActive
                     ? "text-white border-transparent shadow-md"
