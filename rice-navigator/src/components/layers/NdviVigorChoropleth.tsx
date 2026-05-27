@@ -118,19 +118,22 @@ export const NdviVigorChoropleth = ({ geoData, metrics }: Props) => {
     glowPane.style.zIndex = '340';
     glowPane.style.pointerEvents = 'none';
     glowPane.style.filter = 'blur(35px)';
-    glowPane.style.opacity = '0.65'; // Higher opacity for a more vibrant, rich visual bloom
+    (glowPane.style as any).mixBlendMode = 'multiply';
+    glowPane.style.opacity = '1.0'; // Restored to full watercolor multiply bloom
 
     if (!map.getPane('ndviPaneDots')) map.createPane('ndviPaneDots');
     const dotsPane = map.getPane('ndviPaneDots')!;
     dotsPane.style.zIndex = '345';
     dotsPane.style.pointerEvents = 'none';
     dotsPane.style.filter = 'blur(8px)';
-    dotsPane.style.opacity = '0.8'; // Increased opacity for extremely sharp and active localized hotspots
+    (dotsPane.style as any).mixBlendMode = 'multiply';
+    dotsPane.style.opacity = '0.9'; // Restored for high-fidelity watercolor hotspots blending
 
     if (!map.getPane('ndviPane')) map.createPane('ndviPane');
     const pane = map.getPane('ndviPane')!;
     pane.style.zIndex = '350';
     pane.style.pointerEvents = 'none';
+    (pane.style as any).mixBlendMode = 'multiply';
     pane.style.animation = 'ndviBreath 8s ease-in-out infinite';
     pane.style.willChange = 'filter';
 
@@ -240,10 +243,10 @@ export const NdviVigorChoropleth = ({ geoData, metrics }: Props) => {
 
   const lgaStyle = useCallback((feature: any) => ({
     fillColor:   feature?.properties?.fillColor ?? "#22c55e",
-    fillOpacity: fillOpacity * 0.85, // Higher opacity for extremely vibrant, bold colors
+    fillOpacity: fillOpacity * 0.65, // Restored to Water Stress template's soft watercolor fill
     color:       "#18181b", // Dark borders for crisp spatial segmentation
-    weight:      0.6,
-    opacity:     0.8,
+    weight:      0.5,
+    opacity:     0.72,
   }), [fillOpacity]);
 
   const lgaWireStyle = useCallback(() => ({
