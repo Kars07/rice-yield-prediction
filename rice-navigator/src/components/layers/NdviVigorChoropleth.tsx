@@ -109,6 +109,20 @@ export const NdviVigorChoropleth = ({ geoData, metrics }: Props) => {
           animation: wireframeMovement 4s linear infinite;
           stroke-linecap: round;
         }
+        @keyframes ndviShimmer {
+          0%   { background-position: -250% 0; opacity: 0; }
+          10%  { opacity: 1; }
+          90%  { opacity: 1; }
+          100% { background-position: 350% 0; opacity: 0; }
+        }
+        @keyframes ndviGlowPulse {
+          0%, 100% { opacity: 0.10; transform: scale(1.0); }
+          50%      { opacity: 0.45; transform: scale(1.05); }
+        }
+        @keyframes ndviEdgePulse {
+          0%, 100% { opacity: 0.0; }
+          50%      { opacity: 0.25; }
+        }
       `;
       document.head.appendChild(el);
     }
@@ -201,7 +215,7 @@ export const NdviVigorChoropleth = ({ geoData, metrics }: Props) => {
       const [latMin, latMax] = bboxLatRange(f);
       const height = latMax - latMin;
       
-      if (height > 0.45) {
+      if (height > 0.15) { // Lowered from 0.45 to add detailed inner patches & dots to nearly all LGAs (matching Heat Signature detailing)
         const s = si.seed + lat;
         const numPatches = Math.min(3, Math.floor(height * 2.5));
         
@@ -327,6 +341,33 @@ export const NdviVigorChoropleth = ({ geoData, metrics }: Props) => {
           opacity: 0.85,
         }}
       />
+
+      {/* ── Holographic shimmer sweep ── diagonal cyan/emerald shine sweep ── */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        zIndex: 395, pointerEvents: 'none', overflow: 'hidden',
+        backgroundImage: 'linear-gradient(108deg, transparent, rgba(6,182,212,0.12) 40%, rgba(34,197,94,0.06) 50%, rgba(6,182,212,0.12) 60%, transparent)',
+        backgroundSize: '300% 100%',
+        animation: 'ndviShimmer 9s ease-in-out infinite',
+      }} />
+
+      {/* ── Radial crop vigor pulse ── soft center pulse ── */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        zIndex: 394, pointerEvents: 'none',
+        background: 'radial-gradient(ellipse 55% 40% at 50% 50%, rgba(34,197,94,0.08) 0%, rgba(6,182,212,0.02) 55%, transparent 100%)',
+        animation: 'ndviGlowPulse 5s ease-in-out infinite',
+        transformOrigin: 'center',
+      }} />
+
+      {/* ── Perimeter edge vignette ── deep forest green breath ── */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        zIndex: 393, pointerEvents: 'none',
+        background: 'radial-gradient(ellipse 100% 100% at 50% 50%, transparent 45%, rgba(27,94,32,0.10) 100%)',
+        animation: 'ndviEdgePulse 6s ease-in-out infinite',
+        animationDelay: '1.5s',
+      }} />
 
       <NdviVigorLegend />
     </>
