@@ -342,6 +342,32 @@ export const NdviVigorChoropleth = ({ geoData, metrics }: Props) => {
         }}
       />
 
+      {/* ── SVG Sand Noise Filter Definition ── */}
+      <svg width="0" height="0" style={{ position: 'absolute', zIndex: -1, pointerEvents: 'none' }}>
+        <defs>
+          <filter id="ndviSandFilter">
+            <feTurbulence type="fractalNoise" baseFrequency="0.75" numOctaves="3" result="noise">
+              <animate attributeName="seed" values="1;47;93;139;185;231;277;323;369;415;1" dur="0.25s" repeatCount="indefinite" calcMode="discrete" />
+            </feTurbulence>
+            <feColorMatrix type="matrix" values="0 0 0 0 0   0 0 0 0 0   0 0 0 0 0  0 0 0 0.35 0" />
+          </filter>
+        </defs>
+      </svg>
+
+      {/* ── Animating Sand Grain Watercolor Overlay (zIndex: 352) ── */}
+      <div style={{
+        position: 'absolute',
+        inset: 0,
+        zIndex: 352,
+        pointerEvents: 'none',
+        mixBlendMode: 'overlay',
+        opacity: 0.28, // Perfect contrast and grain definition over vegetation
+      }}>
+        <svg width="100%" height="100%">
+          <rect width="100%" height="100%" filter="url(#ndviSandFilter)" />
+        </svg>
+      </div>
+
       {/* ── Holographic shimmer sweep ── diagonal cyan/emerald shine sweep ── */}
       <div style={{
         position: 'absolute', inset: 0,
