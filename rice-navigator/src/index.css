@@ -114,3 +114,26 @@
   70% { box-shadow: 0 0 0 12px hsla(162, 63%, 41%, 0); }
   100% { box-shadow: 0 0 0 0 hsla(162, 63%, 41%, 0); }
 }
+
+/* Custom Scientific Confluence Tooltip overrides */
+.leaflet-tooltip.scientific-tooltip {
+  background-color: #0b0f19 !important;
+  border: 1.5px solid rgba(6, 182, 212, 0.7) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45), 0 0 10px rgba(6, 182, 212, 0.3) !important;
+  color: #ffffff !important;
+  border-radius: 10px !important;
+  padding: 8px 12px !important;
+  font-family: inherit !important;
+}
+.leaflet-tooltip-top.scientific-tooltip::before {
+  border-top-color: #0b0f19 !important;
+}
+.leaflet-tooltip-bottom.scientific-tooltip::before {
+  border-bottom-color: #0b0f19 !important;
+}
+.leaflet-tooltip-left.scientific-tooltip::before {
+  border-left-color: #0b0f19 !important;
+}
+.leaflet-tooltip-right.scientific-tooltip::before {
+  border-right-color: #0b0f19 !important;
+}
