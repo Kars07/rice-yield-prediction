@@ -51,20 +51,17 @@ python model_development/ensemble_v2.py
 
 ### 1. `national_processed_v2.csv` (The Core Dataset)
 This is the primary data source for the frontend UI. It contains the fully cleaned, gap-filled, and mathematically smoothed (Savitzky-Golay) time-series data for 6 Nigerian states. 
-* **Frontend Use Case:** Use this file to populate the interactive charts (e.g., NDVI phenology curves over time) and to display current temperature/rainfall metrics in the UI cards.
 
 ### 2. `xgboost_model_v2.json`
 The saved state of the XGBoost Regressor model. This model analyzes the "Tabular" aggregated features (e.g., Mean NDVI, Total Rain) to predict crop yield.
-* **Frontend Use Case:** If building a Python-based backend (like Streamlit/FastAPI), this file is loaded via `xgboost.XGBRegressor().load_model()`.
 
 ### 3. `dl_model_v2.pth`
 The saved PyTorch weights for the Deep Learning (LSTM) model. This neural network analyzes the sequential, month-by-month time-series data to understand the temporal growth phases of the rice.
-* **Frontend Use Case:** Loaded via `torch.load()` into the `RiceLSTM` class architecture to generate the temporal yield prediction.
+
 
 ### 4. `ensemble_weights_v2.json`
 A simple JSON file containing the dynamically calculated trust weights for the two models. 
 * **Current Weights:** XGBoost (`~52.1%`), LSTM (`~47.8%`).
-* **Frontend Use Case:** The final yield displayed to the user MUST be calculated by multiplying the XGBoost prediction and LSTM prediction by these respective weights and adding them together.
 
 ### 5. `ensemble_v2.py`
 The master backend script. This is for reference. It contains the exact data interpolation logic (`scipy.interpolate`), feature engineering math, model architectures, and training loops used to generate the `.json` and `.pth` files.
@@ -76,5 +73,5 @@ The master backend script. This is for reference. It contains the exact data int
 
 The frontend user interface is built as a separate application inside the `rice-navigator/` directory.
 
-- **Frontend Application URL**: [Rice Navigator Frontend](https://rice-navigator.lovable.app)
+- **Frontend Application URL**: [Rice Navigator Frontend](https://rice-yield-prediction-omega.vercel.app/)
 - **Frontend Documentation**: See [rice-navigator/README.md](rice-navigator/README.md) for UI data dictionary, integration notes, and run commands.
